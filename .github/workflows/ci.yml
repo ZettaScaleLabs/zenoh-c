@@ -7,15 +7,17 @@ on:
     branches: ["**"]
   schedule:
     - cron: "0 6 * * 1-5"
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.job.runner }}, ${{ matrix.job.os }}
+    runs-on: ['${{ matrix.job.runner }}', '${{ matrix.job.os }}']
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        job:
+        - {os: macos, runner: self-hosted}
 
     steps:
       - uses: actions/checkout@v2

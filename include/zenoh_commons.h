@@ -139,6 +139,7 @@ typedef enum z_sample_kind_t {
   Z_SAMPLE_KIND_PUT = 0,
   Z_SAMPLE_KIND_DELETE = 1,
 } z_sample_kind_t;
+typedef struct Option_usize Option_usize;
 /**
  * An array of bytes.
  */
@@ -717,6 +718,39 @@ typedef struct zc_owned_shmbuf_t {
 typedef struct zc_owned_shm_manager_t {
   uintptr_t _0;
 } zc_owned_shm_manager_t;
+/**
+ * An owned zenoh publication_cache.
+ *
+ * Like most `z_owned_X_t` types, you may obtain an instance of `z_X_t` by loaning it using `z_X_loan(&val)`.
+ * The `z_loan(val)` macro, available if your compiler supports C11's `_Generic`, is equivalent to writing `z_X_loan(&val)`.
+ *
+ * Like all `z_owned_X_t`, an instance will be destroyed by any function which takes a mutable pointer to said instance, as this implies the instance's inners were moved.
+ * To make this fact more obvious when reading your code, consider using `z_move(val)` instead of `&val` as the argument.
+ * After a move, `val` will still exist, but will no longer be valid. The destructors are double-drop-safe, but other functions will still trust that your `val` is valid.
+ *
+ * To check if `val` is still valid, you may use `z_X_check(&val)` or `z_check(val)` if your compiler supports `_Generic`, which will return `true` if `val` is valid.
+ */
+#if !defined(TARGET_ARCH_ARM)
+typedef struct ALIGN(8) ze_owned_publication_cache_t {
+  uint64_t _0[1];
+} ze_owned_publication_cache_t;
+#endif
+#if defined(TARGET_ARCH_ARM)
+typedef struct ALIGN(4) ze_owned_publication_cache_t {
+  uint32_t _0[1];
+} ze_owned_publication_cache_t;
+#endif
+/**
+ * Options passed to the :c:func:`z_declare_publication_cache` function.
+ *
+ * Members:
+ *     usize history: The ...
+ *     usze: resources_limit: The ....
+ */
+typedef struct ze_publication_cache_options_t {
+  uintptr_t history;
+  struct Option_usize resources_limit;
+} ze_publication_cache_options_t;
 ZENOHC_API extern const unsigned int Z_ROUTER;
 ZENOHC_API extern const unsigned int Z_PEER;
 ZENOHC_API extern const unsigned int Z_CLIENT;
@@ -1966,3 +2000,48 @@ ZENOHC_API uint8_t *zc_shmbuf_ptr(const struct zc_owned_shmbuf_t *buf);
 ZENOHC_API
 void zc_shmbuf_set_length(const struct zc_owned_shmbuf_t *buf,
                           uintptr_t len);
+/**
+ * Declares a ... .
+ *
+ * ...
+ * ...
+ *
+ * Parameters:
+ *     session: The zenoh session.
+ *     keyexpr: The key expression to publish.
+ *     options: additional options for the publication_cache.
+ *
+ * Returns:
+ *    A :c:type:`ze_owned_publication_cache_t`.
+ *
+ *
+ * Example:
+ *    Declaring a publication cache `NULL` for the options:
+ *
+ *    .. code-block:: C
+ *
+ *       ze_owned_publication_cache_t pub_cache = ze_declare_publication_cache(z_loan(s), z_keyexpr(expr), NULL);
+ *
+ *    is equivalent to initializing and passing the default publication cache options:
+ *
+ *    .. code-block:: C
+ *
+ *       ze_publication_cache_options_t opts = ze_publication_cache_options_default();
+ *       ze_owned_publication_cache_t pub_cache = ze_declare_publication_cache(z_loan(s), z_keyexpr(expr), &opts);
+ */
+ZENOHC_API
+struct ze_owned_publication_cache_t ze_declare_publication_cache(struct z_session_t session,
+                                                                 struct z_keyexpr_t keyexpr,
+                                                                 const struct ze_publication_cache_options_t *options);
+/**
+ * Returns ``true`` if `pub_cache` is valid.
+ */
+ZENOHC_API bool ze_publication_cache_check(const struct ze_owned_publication_cache_t *pub_cache);
+/**
+ * Constructs a null safe-to-drop value of 'ze_owned_publication_cache_t' type
+ */
+ZENOHC_API struct ze_owned_publication_cache_t ze_publication_cache_null(void);
+/**
+ * Constructs the default value for :c:type:`ze_publication_cache_options_t`.
+ */
+ZENOHC_API struct ze_publication_cache_options_t ze_publication_cache_options_default(void);

@@ -44,6 +44,8 @@ mod closures;
 pub use closures::*;
 mod liveliness;
 pub use liveliness::*;
+mod publication_cache;
+pub use publication_cache::*;
 #[cfg(feature = "shared-memory")]
 mod shm;
 

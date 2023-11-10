@@ -15,6 +15,7 @@
 use std::ops::Deref;
 
 use zenoh_ext::*;
+use zenoh_util::core::zresult::ErrNo;
 use zenoh_util::core::SyncResolve;
 
 use crate::{
@@ -159,8 +160,21 @@ pub extern "C" fn ze_publication_cache_null() -> ze_owned_publication_cache_t {
 }
 
 /// Returns ``true`` if `pub_cache` is valid.
-#[allow(clippy::missing_safety_doc)]
 #[no_mangle]
+#[allow(clippy::missing_safety_doc)]
 pub extern "C" fn ze_publication_cache_check(pub_cache: &ze_owned_publication_cache_t) -> bool {
     pub_cache.as_ref().is_some()
+}
+
+/// Closes the given :c:type:`ze_owned_publication_cache_t`, droping it and invalidating it for double-drop safety.
+#[no_mangle]
+#[allow(clippy::missing_safety_doc)]
+pub extern "C" fn ze_close_publication_cache(pub_cache: &mut ze_owned_publication_cache_t) -> i8 {
+    if let Some(p) = pub_cache.as_mut().take() {
+        if let Err(e) = p.close().res_sync() {
+            log::error!("{}", e);
+            return e.errno().get();
+        }
+    }
+    0
 }

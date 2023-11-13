@@ -20,6 +20,7 @@ use libc::{c_char, c_ulong};
 use zenoh::buffers::ZBuf;
 use zenoh::prelude::SampleKind;
 use zenoh::prelude::SplitBuffer;
+use zenoh::sample::Locality;
 use zenoh::sample::Sample;
 use zenoh_protocol::core::Timestamp;
 
@@ -553,4 +554,32 @@ pub extern "C" fn z_str_null() -> z_owned_str_t {
 #[no_mangle]
 pub extern "C" fn z_str_loan(s: &z_owned_str_t) -> *const libc::c_char {
     s._cstr
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub enum z_locality_t {
+    ANY = 0,
+    SESSION_LOCAL = 1,
+    REMOTE = 2,
+}
+
+impl From<Locality> for z_locality_t {
+    fn from(k: Locality) -> Self {
+        match k {
+            Locality::Any => z_locality_t::ANY,
+            Locality::SessionLocal => z_locality_t::SESSION_LOCAL,
+            Locality::Remote => z_locality_t::REMOTE,
+        }
+    }
+}
+
+impl From<z_locality_t> for Locality {
+    fn from(k: z_locality_t) -> Self {
+        match k {
+            z_locality_t::ANY => Locality::Any,
+            z_locality_t::SESSION_LOCAL => Locality::SessionLocal,
+            z_locality_t::REMOTE => Locality::Remote,
+        }
+    }
 }

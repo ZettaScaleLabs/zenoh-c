@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    // if (zc_config_insert_json(z_loan(config), "timestamping", "{'enabled':true}") < 0) {
     if (zc_config_insert_json(z_loan(config), Z_CONFIG_TIMESTAMPING_ENABLED_KEY, "true") < 0) {
         printf("Unable to configure timestamps!\n");
         exit(-1);
@@ -53,8 +52,12 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    printf("Declaring Publisher on '%s'...\n", keyexpr);
-    ze_owned_publication_cache_t pub_cache = ze_declare_publication_cache(z_loan(s), z_keyexpr(keyexpr), NULL);
+    ze_publication_cache_options_t pub_cache_opts = ze_publication_cache_options_default();
+    pub_cache_opts.history = 42;
+
+    printf("Declaring publication cache on '%s'...\n", keyexpr);
+    ze_owned_publication_cache_t pub_cache =
+        ze_declare_publication_cache(z_loan(s), z_keyexpr(keyexpr), &pub_cache_opts);
     if (!ze_publication_cache_check(&pub_cache)) {
         printf("Unable to declare publication cache for key expression!\n");
         exit(-1);

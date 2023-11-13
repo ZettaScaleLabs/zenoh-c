@@ -14,12 +14,13 @@
 
 use std::ops::Deref;
 
-use zenoh_ext::*;
+use zenoh_ext::SessionExt;
 use zenoh_util::core::zresult::ErrNo;
 use zenoh_util::core::SyncResolve;
 
 use crate::{
-    impl_guarded_transmute, z_keyexpr_t, z_session_t, GuardedTransmute, UninitializedKeyExprError,
+    impl_guarded_transmute, z_keyexpr_t, z_locality_t, z_session_t, GuardedTransmute,
+    UninitializedKeyExprError,
 };
 
 /// Options passed to the :c:func:`z_declare_publication_cache` function.
@@ -29,16 +30,20 @@ use crate::{
 ///     usze: resources_limit: The ....
 #[repr(C)]
 pub struct ze_publication_cache_options_t {
+    pub queryable_prefix: z_keyexpr_t,
+    pub queryable_origin: z_locality_t,
     pub history: usize,
-    pub resources_limit: Option<usize>,
+    pub resources_limit: usize,
 }
 
 /// Constructs the default value for :c:type:`ze_publication_cache_options_t`.
 #[no_mangle]
 pub extern "C" fn ze_publication_cache_options_default() -> ze_publication_cache_options_t {
     ze_publication_cache_options_t {
+        queryable_prefix: z_keyexpr_t::null(),
+        queryable_origin: z_locality_t::ANY,
         history: 1,
-        resources_limit: None,
+        resources_limit: 0,
     }
 }
 
@@ -132,8 +137,19 @@ pub extern "C" fn ze_declare_publication_cache(
                 let mut p = s.declare_publication_cache(key_expr);
                 if let Some(options) = options {
                     p = p.history(options.history.into());
-                    if let Some(resources_limit) = options.resources_limit {
-                        p = p.resources_limit(resources_limit.into());
+                    p = p.queryable_allowed_origin(options.queryable_origin.into());
+                    if options.resources_limit != 0 {
+                        p = p.resources_limit(options.resources_limit)
+                    }
+                    if options.queryable_prefix.deref().is_some() {
+                        let queryable_prefix = options
+                            .queryable_prefix
+                            .deref()
+                            .as_ref()
+                            .map(|s| s.clone().into_owned());
+                        if let Some(queryable_prefix) = queryable_prefix {
+                            p = p.queryable_prefix(queryable_prefix)
+                        }
                     }
                 }
                 match p.res_sync() {

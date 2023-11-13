@@ -93,6 +93,11 @@ typedef enum z_encoding_prefix_t {
   Z_ENCODING_PREFIX_IMAGE_PNG = 19,
   Z_ENCODING_PREFIX_IMAGE_GIF = 20,
 } z_encoding_prefix_t;
+typedef enum z_locality_t {
+  Z_LOCALITY_ANY = 0,
+  Z_LOCALITY_SESSION_LOCAL = 1,
+  Z_LOCALITY_REMOTE = 2,
+} z_locality_t;
 /**
  * The priority of zenoh messages.
  *
@@ -747,7 +752,10 @@ typedef struct ALIGN(4) ze_owned_publication_cache_t {
  *     usze: resources_limit: The ....
  */
 typedef struct ze_publication_cache_options_t {
+  struct z_keyexpr_t queryable_prefix;
+  enum z_locality_t queryable_origin;
   uintptr_t history;
+  uintptr_t resources_limit;
 } ze_publication_cache_options_t;
 ZENOHC_API extern const unsigned int Z_ROUTER;
 ZENOHC_API extern const unsigned int Z_PEER;

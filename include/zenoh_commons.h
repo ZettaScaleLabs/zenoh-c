@@ -139,7 +139,6 @@ typedef enum z_sample_kind_t {
   Z_SAMPLE_KIND_PUT = 0,
   Z_SAMPLE_KIND_DELETE = 1,
 } z_sample_kind_t;
-typedef struct Option_usize Option_usize;
 /**
  * An array of bytes.
  */
@@ -749,7 +748,6 @@ typedef struct ALIGN(4) ze_owned_publication_cache_t {
  */
 typedef struct ze_publication_cache_options_t {
   uintptr_t history;
-  struct Option_usize resources_limit;
 } ze_publication_cache_options_t;
 ZENOHC_API extern const unsigned int Z_ROUTER;
 ZENOHC_API extern const unsigned int Z_PEER;
@@ -764,7 +762,7 @@ ZENOHC_API extern const char *Z_CONFIG_MULTICAST_INTERFACE_KEY;
 ZENOHC_API extern const char *Z_CONFIG_MULTICAST_IPV4_ADDRESS_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_TIMEOUT_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_DELAY_KEY;
-ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
+ZENOHC_API extern const char *Z_CONFIG_TIMESTAMPING_ENABLED_KEY;
 /**
  * Returns ``true`` if `b` is initialized.
  */
@@ -2000,6 +1998,11 @@ ZENOHC_API uint8_t *zc_shmbuf_ptr(const struct zc_owned_shmbuf_t *buf);
 ZENOHC_API
 void zc_shmbuf_set_length(const struct zc_owned_shmbuf_t *buf,
                           uintptr_t len);
+/**
+ * Closes the given :c:type:`ze_owned_publication_cache_t`, droping it and invalidating it for double-drop safety.
+ */
+ZENOHC_API
+int8_t ze_close_publication_cache(struct ze_owned_publication_cache_t *pub_cache);
 /**
  * Declares a ... .
  *

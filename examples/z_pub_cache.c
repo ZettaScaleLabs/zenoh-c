@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (zc_config_insert_json(z_loan(config), Z_CONFIG_TIMESTAMPING_ENABLED_KEY, "true") < 0) {
+    if (zc_config_insert_json(z_loan(config), Z_CONFIG_ADD_TIMESTAMP_KEY, "true") < 0) {
         printf("Unable to configure timestamps!\n");
         exit(-1);
     }

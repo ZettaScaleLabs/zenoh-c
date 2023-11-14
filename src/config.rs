@@ -54,7 +54,7 @@ pub static Z_CONFIG_SCOUTING_TIMEOUT_KEY: &c_char =
 pub static Z_CONFIG_SCOUTING_DELAY_KEY: &c_char =
     unsafe { &*(b"scouting/delay\0".as_ptr() as *const c_char) };
 #[no_mangle]
-pub static Z_CONFIG_TIMESTAMPING_ENABLED_KEY: &c_char =
+pub static Z_CONFIG_ADD_TIMESTAMP_KEY: &c_char =
     unsafe { &*(b"timestamping/enabled\0".as_ptr() as *const c_char) };
 
 /// A loaned zenoh configuration.

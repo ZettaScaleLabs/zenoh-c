@@ -558,28 +558,28 @@ pub extern "C" fn z_str_loan(s: &z_owned_str_t) -> *const libc::c_char {
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
-pub enum z_locality_t {
+pub enum zc_locality_t {
     ANY = 0,
     SESSION_LOCAL = 1,
     REMOTE = 2,
 }
 
-impl From<Locality> for z_locality_t {
+impl From<Locality> for zc_locality_t {
     fn from(k: Locality) -> Self {
         match k {
-            Locality::Any => z_locality_t::ANY,
-            Locality::SessionLocal => z_locality_t::SESSION_LOCAL,
-            Locality::Remote => z_locality_t::REMOTE,
+            Locality::Any => zc_locality_t::ANY,
+            Locality::SessionLocal => zc_locality_t::SESSION_LOCAL,
+            Locality::Remote => zc_locality_t::REMOTE,
         }
     }
 }
 
-impl From<z_locality_t> for Locality {
-    fn from(k: z_locality_t) -> Self {
+impl From<zc_locality_t> for Locality {
+    fn from(k: zc_locality_t) -> Self {
         match k {
-            z_locality_t::ANY => Locality::Any,
-            z_locality_t::SESSION_LOCAL => Locality::SessionLocal,
-            z_locality_t::REMOTE => Locality::Remote,
+            zc_locality_t::ANY => Locality::Any,
+            zc_locality_t::SESSION_LOCAL => Locality::SessionLocal,
+            zc_locality_t::REMOTE => Locality::Remote,
         }
     }
 }

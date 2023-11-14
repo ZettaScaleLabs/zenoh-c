@@ -19,7 +19,7 @@ use zenoh_util::core::zresult::ErrNo;
 use zenoh_util::core::SyncResolve;
 
 use crate::{
-    impl_guarded_transmute, z_keyexpr_t, z_locality_t, z_session_t, GuardedTransmute,
+    impl_guarded_transmute, z_keyexpr_t, z_session_t, zc_locality_t, GuardedTransmute,
     UninitializedKeyExprError,
 };
 
@@ -34,7 +34,7 @@ use crate::{
 #[repr(C)]
 pub struct ze_publication_cache_options_t {
     pub queryable_prefix: z_keyexpr_t,
-    pub queryable_origin: z_locality_t,
+    pub queryable_origin: zc_locality_t,
     pub history: usize,
     pub resources_limit: usize,
 }
@@ -44,7 +44,7 @@ pub struct ze_publication_cache_options_t {
 pub extern "C" fn ze_publication_cache_options_default() -> ze_publication_cache_options_t {
     ze_publication_cache_options_t {
         queryable_prefix: z_keyexpr_t::null(),
-        queryable_origin: z_locality_t::ANY,
+        queryable_origin: zc_locality_t::ANY,
         history: 1,
         resources_limit: 0,
     }
@@ -62,13 +62,8 @@ type PublicationCache = Option<Box<zenoh_ext::PublicationCache<'static>>>;
 /// After a move, `val` will still exist, but will no longer be valid. The destructors are double-drop-safe, but other functions will still trust that your `val` is valid.  
 ///
 /// To check if `val` is still valid, you may use `z_X_check(&val)` or `z_check(val)` if your compiler supports `_Generic`, which will return `true` if `val` is valid.
-#[cfg(not(target_arch = "arm"))]
-#[repr(C, align(8))]
-pub struct ze_owned_publication_cache_t([u64; 1]);
-
-#[cfg(target_arch = "arm")]
-#[repr(C, align(4))]
-pub struct ze_owned_publication_cache_t([u32; 1]);
+#[repr(C)]
+pub struct ze_owned_publication_cache_t([usize; 1]);
 
 impl_guarded_transmute!(PublicationCache, ze_owned_publication_cache_t);
 

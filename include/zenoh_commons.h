@@ -93,11 +93,6 @@ typedef enum z_encoding_prefix_t {
   Z_ENCODING_PREFIX_IMAGE_PNG = 19,
   Z_ENCODING_PREFIX_IMAGE_GIF = 20,
 } z_encoding_prefix_t;
-typedef enum z_locality_t {
-  Z_LOCALITY_ANY = 0,
-  Z_LOCALITY_SESSION_LOCAL = 1,
-  Z_LOCALITY_REMOTE = 2,
-} z_locality_t;
 /**
  * The priority of zenoh messages.
  *
@@ -144,6 +139,11 @@ typedef enum z_sample_kind_t {
   Z_SAMPLE_KIND_PUT = 0,
   Z_SAMPLE_KIND_DELETE = 1,
 } z_sample_kind_t;
+typedef enum zc_locality_t {
+  ZC_LOCALITY_ANY = 0,
+  ZC_LOCALITY_SESSION_LOCAL = 1,
+  ZC_LOCALITY_REMOTE = 2,
+} zc_locality_t;
 /**
  * An array of bytes.
  */
@@ -734,16 +734,9 @@ typedef struct zc_owned_shm_manager_t {
  *
  * To check if `val` is still valid, you may use `z_X_check(&val)` or `z_check(val)` if your compiler supports `_Generic`, which will return `true` if `val` is valid.
  */
-#if !defined(TARGET_ARCH_ARM)
-typedef struct ALIGN(8) ze_owned_publication_cache_t {
-  uint64_t _0[1];
+typedef struct ze_owned_publication_cache_t {
+  uintptr_t _0[1];
 } ze_owned_publication_cache_t;
-#endif
-#if defined(TARGET_ARCH_ARM)
-typedef struct ALIGN(4) ze_owned_publication_cache_t {
-  uint32_t _0[1];
-} ze_owned_publication_cache_t;
-#endif
 /**
  * Options passed to the :c:func:`ze_declare_publication_cache` function.
  *
@@ -756,7 +749,7 @@ typedef struct ALIGN(4) ze_owned_publication_cache_t {
  */
 typedef struct ze_publication_cache_options_t {
   struct z_keyexpr_t queryable_prefix;
-  enum z_locality_t queryable_origin;
+  enum zc_locality_t queryable_origin;
   uintptr_t history;
   uintptr_t resources_limit;
 } ze_publication_cache_options_t;
@@ -773,7 +766,7 @@ ZENOHC_API extern const char *Z_CONFIG_MULTICAST_INTERFACE_KEY;
 ZENOHC_API extern const char *Z_CONFIG_MULTICAST_IPV4_ADDRESS_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_TIMEOUT_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_DELAY_KEY;
-ZENOHC_API extern const char *Z_CONFIG_TIMESTAMPING_ENABLED_KEY;
+ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
 /**
  * Returns ``true`` if `b` is initialized.
  */

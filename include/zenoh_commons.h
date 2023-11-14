@@ -745,11 +745,14 @@ typedef struct ALIGN(4) ze_owned_publication_cache_t {
 } ze_owned_publication_cache_t;
 #endif
 /**
- * Options passed to the :c:func:`z_declare_publication_cache` function.
+ * Options passed to the :c:func:`ze_declare_publication_cache` function.
  *
  * Members:
- *     usize history: The ...
- *     usze: resources_limit: The ....
+ *     queryable_prefix: the prefix used for queryable
+ *     queryable_origin: the restriction for the matching queries that will be receive by this
+ *                       publication cache
+ *     history: the the history size
+ *     resources_limit: the limit number of cached resources
  */
 typedef struct ze_publication_cache_options_t {
   struct z_keyexpr_t queryable_prefix;
@@ -2012,14 +2015,11 @@ void zc_shmbuf_set_length(const struct zc_owned_shmbuf_t *buf,
 ZENOHC_API
 int8_t ze_close_publication_cache(struct ze_owned_publication_cache_t *pub_cache);
 /**
- * Declares a ... .
- *
- * ...
- * ...
+ * Declares a publication cache.
  *
  * Parameters:
- *     session: The zenoh session.
- *     keyexpr: The key expression to publish.
+ *     session: the zenoh session.
+ *     keyexpr: the key expression to publish.
  *     options: additional options for the publication_cache.
  *
  * Returns:

@@ -23,11 +23,14 @@ use crate::{
     UninitializedKeyExprError,
 };
 
-/// Options passed to the :c:func:`z_declare_publication_cache` function.
+/// Options passed to the :c:func:`ze_declare_publication_cache` function.
 ///
 /// Members:
-///     usize history: The ...
-///     usze: resources_limit: The ....
+///     queryable_prefix: the prefix used for queryable
+///     queryable_origin: the restriction for the matching queries that will be receive by this
+///                       publication cache
+///     history: the the history size
+///     resources_limit: the limit number of cached resources
 #[repr(C)]
 pub struct ze_publication_cache_options_t {
     pub queryable_prefix: z_keyexpr_t,
@@ -96,14 +99,11 @@ impl ze_owned_publication_cache_t {
     }
 }
 
-/// Declares a ... .
-///
-/// ...
-/// ...
+/// Declares a publication cache.
 ///
 /// Parameters:
-///     session: The zenoh session.
-///     keyexpr: The key expression to publish.
+///     session: the zenoh session.
+///     keyexpr: the key expression to publish.
 ///     options: additional options for the publication_cache.
 ///
 /// Returns:

@@ -46,6 +46,8 @@ mod liveliness;
 pub use liveliness::*;
 mod publication_cache;
 pub use publication_cache::*;
+mod querying_subscriber;
+pub use querying_subscriber::*;
 #[cfg(feature = "shared-memory")]
 mod shm;
 

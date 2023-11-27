@@ -11,6 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#include <stdint.h>
 #include <stdio.h>
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
@@ -26,6 +27,10 @@ void data_handler(const z_sample_t *sample, void *arg) {
     z_owned_str_t keystr = z_keyexpr_to_string(sample->keyexpr);
     printf(">> [Subscriber] Received %s ('%s': '%.*s')\n", kind_to_str(sample->kind), z_loan(keystr),
            (int)sample->payload.len, sample->payload.start);
+    if (z_check(sample->attachment)) {
+        z_owned_bytes_map_t map = z_bytes_map_from_attachment(sample->attachment);
+        z_bytes_t there = z_bytes_map_get(&map, z_bytes_new("hello"));
+    }
     z_drop(z_move(keystr));
 }
 

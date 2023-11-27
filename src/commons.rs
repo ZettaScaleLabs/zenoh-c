@@ -12,6 +12,8 @@
 //   ZettaScale Zenoh team, <zenoh@zettascale.tech>
 //
 
+use crate::attachment::z_attachment_null;
+use crate::attachment::z_attachment_t;
 use crate::collections::*;
 use crate::keyexpr::*;
 use crate::z_id_t;
@@ -204,6 +206,7 @@ pub struct z_sample_t<'a> {
     pub _zc_buf: &'a c_void,
     pub kind: z_sample_kind_t,
     pub timestamp: z_timestamp_t,
+    pub attachment: z_attachment_t,
 }
 
 impl<'a> z_sample_t<'a> {
@@ -218,6 +221,7 @@ impl<'a> z_sample_t<'a> {
             _zc_buf: unsafe { std::mem::transmute(owner) },
             kind: sample.kind.into(),
             timestamp: sample.timestamp.as_ref().into(),
+            attachment: z_attachment_null(),
         }
     }
 }

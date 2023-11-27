@@ -36,6 +36,7 @@
                   z_owned_closure_zid_t * : z_closure_zid_drop,                       \
                   z_owned_reply_channel_closure_t * : z_reply_channel_closure_drop,   \
                   z_owned_reply_channel_t * : z_reply_channel_drop,                   \
+                  z_owned_bytes_map_t * : z_bytes_map_drop,                           \
                   zc_owned_payload_t * : zc_payload_drop,                             \
                   zc_owned_shmbuf_t * : zc_shmbuf_drop,                               \
                   zc_owned_shm_manager_t * : zc_shm_manager_drop,                     \
@@ -43,6 +44,8 @@
                   ze_owned_publication_cache_t * : ze_undeclare_publication_cache,    \
                   ze_owned_querying_subscriber_t * : ze_undeclare_querying_subscriber \
             )(x)
+
+// TODO(sashacmc): Check z_attachment_t name
 
 #define z_null(x) (*x = \
     _Generic((x), z_owned_session_t * : z_session_null,                             \
@@ -64,6 +67,7 @@
                   z_owned_closure_zid_t * : z_closure_zid_null,                     \
                   z_owned_reply_channel_closure_t * : z_reply_channel_closure_null, \
                   z_owned_reply_channel_t * : z_reply_channel_null,                 \
+				  z_attachment_t : z_attachment_null,                             \
                   zc_owned_payload_t * : zc_payload_null,                           \
                   zc_owned_shmbuf_t * : zc_shmbuf_null,                             \
                   zc_owned_shm_manager_t * : zc_shm_manager_null,                   \
@@ -86,6 +90,8 @@
                   z_owned_reply_t : z_reply_check,                              \
                   z_owned_hello_t : z_hello_check,                              \
                   z_owned_str_t : z_str_check,                                  \
+                  z_attachment_t : z_attachment_check,                        \
+                  z_owned_bytes_map_t : z_bytes_map_check,                      \
                   zc_owned_payload_t : zc_payload_check,                        \
                   zc_owned_shmbuf_t : zc_shmbuf_check,                          \
                   zc_owned_shm_manager_t : zc_shm_manager_check,                \

@@ -11,6 +11,8 @@
 // Contributors:
 //   ZettaScale Zenoh team, <zenoh@zettascale.tech>
 //
+use crate::attachment::z_attachment_null;
+use crate::attachment::z_attachment_t;
 use crate::commons::*;
 use crate::keyexpr::*;
 use crate::session::*;
@@ -112,6 +114,7 @@ pub struct z_put_options_t {
     pub encoding: z_encoding_t,
     pub congestion_control: z_congestion_control_t,
     pub priority: z_priority_t,
+    pub attachment: z_attachment_t,
 }
 
 /// Constructs the default value for :c:type:`z_put_options_t`.
@@ -122,6 +125,7 @@ pub extern "C" fn z_put_options_default() -> z_put_options_t {
         encoding: z_encoding_default(),
         congestion_control: CongestionControl::default().into(),
         priority: Priority::default().into(),
+        attachment: z_attachment_null(),
     }
 }
 

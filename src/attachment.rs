@@ -88,7 +88,7 @@ pub struct z_owned_bytes_map_t {
     _1: [usize; 4],
 }
 impl core::ops::Deref for z_owned_bytes_map_t {
-    type Target = Option<UnsafeCell<HashMap<Cow<'static, [u8]>, Cow<'static, [u8]>>>>;
+    type Target = UnsafeCell<Option<HashMap<Cow<'static, [u8]>, Cow<'static, [u8]>>>>;
     fn deref(&self) -> &Self::Target {
         unsafe { core::mem::transmute(self) }
     }
@@ -109,17 +109,15 @@ pub extern "C" fn z_bytes_map_null() -> z_owned_bytes_map_t {
 /// Returns `true` if the map is not in its gravestone state
 #[no_mangle]
 pub extern "C" fn z_bytes_map_check(this: &z_owned_bytes_map_t) -> bool {
-    this.is_some()
+    unsafe { &*this.get() }.is_some()
 }
 /// Destroys the map, resetting `this` to its gravestone value.
 ///
 /// This function is double-free safe, passing a pointer to the gravestone value will have no effect.
 #[no_mangle]
 pub extern "C" fn z_bytes_map_drop(this: &mut z_owned_bytes_map_t) {
-    let this = core::mem::replace(this, z_bytes_map_null());
-    if z_bytes_map_check(&this) {
-        core::mem::drop(unsafe { core::mem::transmute::<_, HashMap<Cow<[u8]>, Cow<[u8]>>>(this) })
-    }
+    let this = unsafe { &mut *this.get() };
+    this.take();
 }
 
 /// Returns the value associated with `key`, returning a gravestone value if:
@@ -127,10 +125,11 @@ pub extern "C" fn z_bytes_map_drop(this: &mut z_owned_bytes_map_t) {
 /// - `this` has no value associated to `key`
 #[no_mangle]
 pub extern "C" fn z_bytes_map_get(this: &z_owned_bytes_map_t, key: z_bytes_t) -> z_bytes_t {
+    let this = unsafe { &*this.get() };
     let (Some(this), Some(key)) = (this.as_ref(), key.as_slice()) else {
         return z_bytes_null();
     };
-    if let Some(value) = unsafe { &*this.get() }.get(key) {
+    if let Some(value) = this.get(key) {
         value.as_ref().into()
     } else {
         z_bytes_null()
@@ -146,10 +145,10 @@ pub extern "C" fn z_bytes_map_insert_by_copy(
     key: z_bytes_t,
     value: z_bytes_t,
 ) {
-    if let (Some(this), Some(key), Some(value)) = (this.as_ref(), key.as_slice(), value.as_slice())
+    let this = unsafe { &mut *this.get() };
+    if let (Some(this), Some(key), Some(value)) = (this.as_mut(), key.as_slice(), value.as_slice())
     {
-        unsafe { &mut *this.get() }
-            .insert(Cow::Owned(key.to_owned()), Cow::Owned(value.to_owned()));
+        this.insert(Cow::Owned(key.to_owned()), Cow::Owned(value.to_owned()));
     }
 }
 
@@ -164,10 +163,11 @@ pub extern "C" fn z_bytes_map_insert_by_alias(
     key: z_bytes_t,
     value: z_bytes_t,
 ) {
-    if let (Some(this), Some(key), Some(value)) = (this.as_ref(), key.as_slice(), value.as_slice())
+    let this = unsafe { &mut *this.get() };
+    if let (Some(this), Some(key), Some(value)) = (this.as_mut(), key.as_slice(), value.as_slice())
     {
         unsafe {
-            (*this.get()).insert(
+            this.insert(
                 Cow::Borrowed(core::mem::transmute(key)),
                 Cow::Borrowed(core::mem::transmute(value)),
             )
@@ -180,8 +180,8 @@ pub extern "C" fn z_bytes_map_insert_by_alias(
 /// Calling this with `NULL` or the gravestone value is undefined behaviour.
 #[no_mangle]
 extern "C" fn z_bytes_map_len(this: &z_owned_bytes_map_t) -> usize {
-    this.as_ref()
-        .map_or(0, |this| unsafe { &*this.get() }.len())
+    let this = unsafe { &*this.get() };
+    this.as_ref().map_or(0, |this| this.len())
 }
 
 /// Iterates over the key-value pairs in the map.
@@ -200,8 +200,9 @@ pub extern "C" fn z_bytes_map_iter(
     body: z_attachment_iter_body_t,
     ctx: *mut c_void,
 ) -> i8 {
+    let this = unsafe { &*this.get() };
     if let Some(this) = this.as_ref() {
-        for (key, value) in unsafe { &*this.get() }.iter() {
+        for (key, value) in this.iter() {
             let result = body(key.as_ref().into(), value.as_ref().into(), ctx);
             if result != 0 {
                 return result;

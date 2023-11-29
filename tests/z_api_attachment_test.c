@@ -46,7 +46,7 @@ void writting_through_map_by_alias_read_by_get() {
     assert(a_non.start == NULL);
     assert(a_non.len == 0);
 
-    z_bytes_map_drop(z_move(map));
+    z_drop(z_move(map));
 }
 
 int8_t _attachment_reader(z_bytes_t key, z_bytes_t value, void* ctx) {
@@ -74,7 +74,7 @@ void writting_through_map_by_copy_read_by_iter() {
     int res = z_attachment_iterate(attachment, _attachment_reader, (void*)42);
     assert(res == 24);
 
-    z_bytes_map_drop(z_move(map));
+    z_drop(z_move(map));
 }
 
 int main(int argc, char** argv) {

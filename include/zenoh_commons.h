@@ -888,6 +888,10 @@ ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
  */
 ZENOHC_API bool z_attachment_check(const struct z_attachment_t *this_);
 /**
+ * Returns the value associated with the key.
+ */
+ZENOHC_API struct z_bytes_t z_attachment_get(struct z_attachment_t this_, struct z_bytes_t key);
+/**
  * Iterate over `this`'s key-value pairs, breaking if `body` returns a non-zero
  * value for a key-value pair, and returning the latest return value.
  *

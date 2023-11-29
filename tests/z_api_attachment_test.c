@@ -21,7 +21,7 @@
 #undef NDEBUG
 #include <assert.h>
 
-void writting_through_map_by_alias() {
+void writting_through_map_by_alias_read_by_get() {
     // Writing
     z_owned_bytes_map_t map = z_bytes_map_new();
     z_bytes_map_insert_by_alias(&map, z_bytes_new("k1"), z_bytes_new("v1"));
@@ -32,10 +32,35 @@ void writting_through_map_by_alias() {
     assert(z_attachment_len(attachment) == 2);
 
     // Elements check
-    // z_bytes_t a = z_attachment_get(attachment, z_bytes_new("k1"));
+    z_bytes_t a1 = z_attachment_get(attachment, z_bytes_new("k1"));
+    assert(a1.start != NULL);
+    assert(a1.len == 2);
+    assert(!strncmp(a1.start, "v1", a1.len));
+
+    z_bytes_t a2 = z_attachment_get(attachment, z_bytes_new("k2"));
+    assert(a2.start != NULL);
+    assert(a2.len == 2);
+    assert(!strncmp(a2.start, "v2", a2.len));
+
+    z_bytes_t a_non = z_attachment_get(attachment, z_bytes_new("k_non"));
+    assert(a_non.start == NULL);
+    assert(a_non.len == 0);
+
+    z_bytes_map_drop(z_move(map));
 }
 
-void writting_through_map_by_copy() {
+int8_t _attachment_reader(z_bytes_t key, z_bytes_t value, void* ctx) {
+    assert((size_t)ctx == 42);
+    if (!strncmp(key.start, "k1", key.len)) {
+        assert(!strncmp(value.start, "v1", value.len));
+    }
+    if (!strncmp(key.start, "k2", key.len)) {
+        assert(!strncmp(value.start, "v2", value.len));
+    }
+    return 24;
+}
+
+void writting_through_map_by_copy_read_by_iter() {
     // Writing
     z_owned_bytes_map_t map = z_bytes_map_new();
     z_bytes_map_insert_by_copy(&map, z_bytes_new("k1"), z_bytes_new("v1"));
@@ -44,9 +69,15 @@ void writting_through_map_by_copy() {
 
     // Size check
     assert(z_attachment_len(attachment) == 2);
+
+    // Elements check
+    int res = z_attachment_iterate(attachment, _attachment_reader, (void*)42);
+    assert(res == 24);
+
+    z_bytes_map_drop(z_move(map));
 }
 
-int main(int argc, char **argv) {
-    writting_through_map_by_alias();
-    writting_through_map_by_copy();
+int main(int argc, char** argv) {
+    writting_through_map_by_alias_read_by_get();
+    writting_through_map_by_copy_read_by_iter();
 }

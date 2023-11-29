@@ -73,45 +73,46 @@ pub extern "C" fn z_attachment_iterate(
     (this.vtable.unwrap().iteration_driver)(this.data, body, context)
 }
 
-struct _z_attachment_get_iterator_context {
-    key: z_bytes_t,
-    value: z_bytes_t,
-}
-
-extern "C" fn _z_attachment_get_iterator(
-    key: z_bytes_t,
-    value: z_bytes_t,
-    context: *mut c_void,
-) -> i8 {
-    unsafe {
-        if (*(context as *const _z_attachment_get_iterator_context))
-            .key
-            .as_slice()
-            == key.as_slice()
-        {
-            (*(context as *mut _z_attachment_get_iterator_context)).value = value;
-            return 1;
-        }
-    }
-    return 0;
-}
-
 /// Returns the value associated with the key.
 #[no_mangle]
 pub extern "C" fn z_attachment_get(this: z_attachment_t, key: z_bytes_t) -> z_bytes_t {
-    let mut context = _z_attachment_get_iterator_context {
+    struct attachment_get_iterator_context {
+        key: z_bytes_t,
+        value: z_bytes_t,
+    }
+
+    extern "C" fn attachment_get_iterator(
+        key: z_bytes_t,
+        value: z_bytes_t,
+        context: *mut c_void,
+    ) -> i8 {
+        unsafe {
+            let context = &mut *(context as *mut attachment_get_iterator_context);
+            if context.key.as_slice() == key.as_slice() {
+                context.value = value;
+                1
+            } else {
+                0
+            }
+        }
+    }
+
+    let mut context = attachment_get_iterator_context {
         key: key,
         value: z_bytes_null(),
     };
-    if (this.vtable.unwrap().iteration_driver)(
-        this.data,
-        _z_attachment_get_iterator,
-        &mut context as *mut _ as *mut c_void,
-    ) != 0
-    {
-        return context.value;
+
+    if this.vtable.map_or(false, |vtable| {
+        (vtable.iteration_driver)(
+            this.data,
+            attachment_get_iterator,
+            &mut context as *mut _ as *mut c_void,
+        ) != 0
+    }) {
+        context.value
+    } else {
+        z_bytes_null()
     }
-    return z_bytes_null();
 }
 
 /// Returns the number of key-value pairs in `this`.

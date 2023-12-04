@@ -180,6 +180,10 @@ typedef int8_t (*z_attachment_iter_driver_t)(void *iterator,
                                              z_attachment_iter_body_t loop_body,
                                              void *context);
 /**
+ * Returns the number of key-value pairs within the attachment.
+ */
+typedef size_t (*z_attachment_len_t)(const void*);
+/**
  * The v-table for an attachment.
  */
 typedef struct z_attachment_vtable_t {
@@ -190,7 +194,7 @@ typedef struct z_attachment_vtable_t {
   /**
    * Returns the number of key-value pairs within the attachment.
    */
-  size_t (*len)(const void*);
+  z_attachment_len_t len;
 } z_attachment_vtable_t;
 /**
  * A v-table based map of byte slice to byte slice.
@@ -885,6 +889,10 @@ ZENOHC_API extern const char *Z_CONFIG_SCOUTING_TIMEOUT_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_DELAY_KEY;
 ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
 /**
+ * Constructs a specific :c:type:`z_attachment_t`.
+ */
+ZENOHC_API struct z_attachment_t z_attachment(void *data, struct z_attachment_vtable_t vtable);
+/**
  * Returns the gravestone value for `z_attachment_t`.
  */
 ZENOHC_API bool z_attachment_check(const struct z_attachment_t *this_);
@@ -912,6 +920,12 @@ ZENOHC_API size_t z_attachment_len(struct z_attachment_t this_);
  * Returns the gravestone value for `z_attachment_t`.
  */
 ZENOHC_API struct z_attachment_t z_attachment_null(void);
+/**
+ * Constructs a specific :c:type:`z_attachment_vtable_t`.
+ */
+ZENOHC_API
+struct z_attachment_vtable_t z_attachment_vtable(z_attachment_iter_driver_t iteration_driver,
+                                                 z_attachment_len_t len);
 /**
  * Returns ``true`` if `b` is initialized.
  */

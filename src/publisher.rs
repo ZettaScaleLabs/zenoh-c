@@ -22,6 +22,8 @@ use zenoh::{
 use zenoh_protocol::core::CongestionControl;
 use zenoh_util::core::{zresult::ErrNo, SyncResolve};
 
+use crate::attachment::z_attachment_null;
+use crate::attachment::z_attachment_t;
 use crate::{
     impl_guarded_transmute, z_congestion_control_t, z_encoding_default, z_encoding_t, z_keyexpr_t,
     z_owned_keyexpr_t, z_priority_t, z_session_t, zc_owned_payload_t, GuardedTransmute,
@@ -211,6 +213,7 @@ pub extern "C" fn z_publisher_loan(p: &z_owned_publisher_t) -> z_publisher_t {
 #[repr(C)]
 pub struct z_publisher_put_options_t {
     pub encoding: z_encoding_t,
+    pub attachment: z_attachment_t,
 }
 
 /// Constructs the default value for :c:type:`z_publisher_put_options_t`.
@@ -219,6 +222,7 @@ pub struct z_publisher_put_options_t {
 pub extern "C" fn z_publisher_put_options_default() -> z_publisher_put_options_t {
     z_publisher_put_options_t {
         encoding: z_encoding_default(),
+        attachment: z_attachment_null(),
     }
 }
 

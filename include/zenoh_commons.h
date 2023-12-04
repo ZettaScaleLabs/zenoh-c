@@ -670,6 +670,7 @@ typedef struct z_publisher_delete_options_t {
  */
 typedef struct z_publisher_put_options_t {
   struct z_encoding_t encoding;
+  struct z_attachment_t attachment;
 } z_publisher_put_options_t;
 typedef struct z_pull_subscriber_t {
   const struct z_owned_pull_subscriber_t *_0;

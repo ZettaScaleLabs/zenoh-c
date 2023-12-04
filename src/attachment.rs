@@ -24,13 +24,29 @@ pub type z_attachment_iter_driver_t = extern "C" fn(
     context: *mut c_void,
 ) -> i8;
 
+/// Returns the number of key-value pairs within the attachment.
+pub type z_attachment_len_t = extern "C" fn(*const c_void) -> usize;
+
 /// The v-table for an attachment.
 #[repr(C)]
 pub struct z_attachment_vtable_t {
     /// See `z_attachment_iteration_driver_t`'s documentation.
     iteration_driver: z_attachment_iter_driver_t,
     /// Returns the number of key-value pairs within the attachment.
-    len: extern "C" fn(*const c_void) -> usize,
+    len: z_attachment_len_t,
+}
+
+/// Constructs a specific :c:type:`z_attachment_vtable_t`.
+#[no_mangle]
+#[allow(clippy::missing_safety_doc)]
+pub unsafe extern "C" fn z_attachment_vtable(
+    iteration_driver: z_attachment_iter_driver_t,
+    len: z_attachment_len_t,
+) -> z_attachment_vtable_t {
+    z_attachment_vtable_t {
+        iteration_driver,
+        len,
+    }
 }
 
 /// A v-table based map of byte slice to byte slice.
@@ -55,6 +71,22 @@ pub extern "C" fn z_attachment_null() -> z_attachment_t {
     z_attachment_t {
         data: core::ptr::null_mut(),
         vtable: None,
+    }
+}
+
+/// Constructs a specific :c:type:`z_attachment_t`.
+#[no_mangle]
+#[allow(clippy::missing_safety_doc)]
+pub unsafe extern "C" fn z_attachment(
+    data: *mut c_void,
+    vtable: z_attachment_vtable_t,
+) -> z_attachment_t {
+    z_attachment_t {
+        data,
+        vtable: Some(std::mem::transmute::<
+            &z_attachment_vtable_t,
+            &'static z_attachment_vtable_t,
+        >(&vtable)),
     }
 }
 

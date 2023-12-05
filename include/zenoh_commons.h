@@ -176,7 +176,7 @@ typedef int8_t (*z_attachment_iter_body_t)(struct z_bytes_t key,
  * This function is expected to call `loop_body` once for each key-value pair
  * within `iterator`, passing `context`, and returning any non-zero value immediately (breaking iteration).
  */
-typedef int8_t (*z_attachment_iter_driver_t)(void *iterator,
+typedef int8_t (*z_attachment_iter_driver_t)(const void *iterator,
                                              z_attachment_iter_body_t loop_body,
                                              void *context);
 /**
@@ -203,7 +203,7 @@ typedef struct z_attachment_vtable_t {
  * Users are encouraged to use `z_attachment_null` and `z_attachment_check` to interact.
  */
 typedef struct z_attachment_t {
-  void *data;
+  const void *data;
   const struct z_attachment_vtable_t *vtable;
 } z_attachment_t;
 /**
@@ -891,7 +891,9 @@ ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
 /**
  * Constructs a specific :c:type:`z_attachment_t`.
  */
-ZENOHC_API struct z_attachment_t z_attachment(void *data, struct z_attachment_vtable_t vtable);
+ZENOHC_API
+struct z_attachment_t z_attachment(const void *data,
+                                   const struct z_attachment_vtable_t *vtable);
 /**
  * Returns the gravestone value for `z_attachment_t`.
  */

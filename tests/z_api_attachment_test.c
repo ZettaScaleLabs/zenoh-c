@@ -77,7 +77,7 @@ void writting_through_map_by_copy_read_by_iter() {
     z_drop(z_move(map));
 }
 
-int8_t _iteration_driver(void* data, z_attachment_iter_body_t body, void* ctx) {
+int8_t _iteration_driver(const void* data, z_attachment_iter_body_t body, void* ctx) {
     int8_t ret = 0;
     ret = body(z_bytes_new("k1"), z_bytes_new("v1"), ctx);
     if (ret) {

@@ -19,7 +19,7 @@ pub type z_attachment_iter_body_t =
 /// This function is expected to call `loop_body` once for each key-value pair
 /// within `iterator`, passing `context`, and returning any non-zero value immediately (breaking iteration).
 pub type z_attachment_iter_driver_t = extern "C" fn(
-    iterator: *mut c_void,
+    iterator: *const c_void,
     loop_body: z_attachment_iter_body_t,
     context: *mut c_void,
 ) -> i8;
@@ -39,7 +39,7 @@ pub struct z_attachment_vtable_t {
 /// Constructs a specific :c:type:`z_attachment_vtable_t`.
 #[no_mangle]
 #[allow(clippy::missing_safety_doc)]
-pub unsafe extern "C" fn z_attachment_vtable(
+pub extern "C" fn z_attachment_vtable(
     iteration_driver: z_attachment_iter_driver_t,
     len: z_attachment_len_t,
 ) -> z_attachment_vtable_t {
@@ -55,7 +55,7 @@ pub unsafe extern "C" fn z_attachment_vtable(
 /// Users are encouraged to use `z_attachment_null` and `z_attachment_check` to interact.
 #[repr(C)]
 pub struct z_attachment_t {
-    data: *mut c_void,
+    data: *const c_void,
     vtable: Option<&'static z_attachment_vtable_t>,
 }
 
@@ -77,16 +77,13 @@ pub extern "C" fn z_attachment_null() -> z_attachment_t {
 /// Constructs a specific :c:type:`z_attachment_t`.
 #[no_mangle]
 #[allow(clippy::missing_safety_doc)]
-pub unsafe extern "C" fn z_attachment(
-    data: *mut c_void,
-    vtable: z_attachment_vtable_t,
+pub extern "C" fn z_attachment(
+    data: *const c_void,
+    vtable: &'static z_attachment_vtable_t,
 ) -> z_attachment_t {
     z_attachment_t {
         data,
-        vtable: Some(std::mem::transmute::<
-            &z_attachment_vtable_t,
-            &'static z_attachment_vtable_t,
-        >(&vtable)),
+        vtable: Some(vtable),
     }
 }
 

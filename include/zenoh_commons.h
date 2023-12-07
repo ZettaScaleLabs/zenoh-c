@@ -308,7 +308,7 @@ typedef struct z_owned_closure_query_t {
  */
 #if defined(TARGET_ARCH_X86_64)
 typedef struct ALIGN(8) z_owned_reply_t {
-  uint64_t _0[23];
+  uint64_t _0[28];
 } z_owned_reply_t;
 #endif
 #if defined(TARGET_ARCH_AARCH64)
@@ -875,6 +875,8 @@ ZENOHC_API extern const char *Z_CONFIG_MULTICAST_IPV4_ADDRESS_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_TIMEOUT_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_DELAY_KEY;
 ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
+ZENOHC_API int8_t attachment_iter(const void *this_, z_attachment_iter_body_t body, void *ctx);
+ZENOHC_API int8_t insert_in_attachment(struct z_bytes_t key, struct z_bytes_t value, void *ctx);
 /**
  * Constructs a specific :c:type:`z_attachment_t`.
  */

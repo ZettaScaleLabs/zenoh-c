@@ -54,18 +54,24 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
+    z_publisher_put_options_t options = z_publisher_put_options_default();
+    options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);
+    z_owned_bytes_map_t map = z_bytes_map_new();
+    options.attachment = z_bytes_map_as_attachment(&map);
     char buf[256];
+    char buf_ind[16];
     for (int idx = 0; 1; ++idx) {
         sleep(1);
         sprintf(buf, "[%4d] %s", idx, value);
+        sprintf(buf_ind, "%d", idx);
         printf("Putting Data ('%s': '%s')...\n", keyexpr, buf);
-        z_publisher_put_options_t options = z_publisher_put_options_default();
-        options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);
+        z_bytes_map_insert_by_copy(&map, z_bytes_new("index"), z_bytes_new(buf_ind));
         z_publisher_put(z_loan(pub), (const uint8_t *)buf, strlen(buf), &options);
     }
 
     z_undeclare_publisher(z_move(pub));
 
     z_close(z_move(s));
+    z_drop(z_move(map));
     return 0;
 }

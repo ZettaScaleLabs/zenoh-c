@@ -18,12 +18,17 @@ use zenoh::prelude::SessionDeclarations;
 use zenoh::{
     prelude::{Priority, Value},
     publication::Publisher,
+    sample::Attachment,
 };
 use zenoh_protocol::core::CongestionControl;
 use zenoh_util::core::{zresult::ErrNo, SyncResolve};
 
-use crate::attachment::z_attachment_null;
-use crate::attachment::z_attachment_t;
+use crate::attachment::{
+    insert_in_attachment, z_attachment_check, z_attachment_iterate, z_attachment_null,
+    z_attachment_t,
+};
+use libc::c_void;
+
 use crate::{
     impl_guarded_transmute, z_congestion_control_t, z_encoding_default, z_encoding_t, z_keyexpr_t,
     z_owned_keyexpr_t, z_priority_t, z_session_t, zc_owned_payload_t, GuardedTransmute,
@@ -248,7 +253,19 @@ pub unsafe extern "C" fn z_publisher_put(
     if let Some(p) = publisher.as_ref() {
         let value: Value = std::slice::from_raw_parts(payload, len).into();
         let put = match options {
-            Some(options) => p.put(value.encoding(options.encoding.into())),
+            Some(options) => {
+                let mut put = p.put(value.encoding(options.encoding.into()));
+                if z_attachment_check(&options.attachment) {
+                    let mut attachment = Attachment::new();
+                    z_attachment_iterate(
+                        options.attachment,
+                        insert_in_attachment,
+                        &mut attachment as *mut Attachment as *mut c_void,
+                    );
+                    put = put.with_attachment(attachment);
+                };
+                put
+            }
             None => p.put(value),
         };
         if let Err(e) = put.res_sync() {

@@ -4,6 +4,8 @@ use libc::c_void;
 
 use crate::{z_bytes_null, z_bytes_t};
 
+use zenoh::sample::Attachment;
+
 /// The body of a loop over an attachment's key-value pairs.
 ///
 /// `key` and `value` are loaned to the body for the duration of a single call.
@@ -54,6 +56,7 @@ pub extern "C" fn z_attachment_vtable(
 /// `vtable == NULL` marks the gravestone value, as this type is often optional.
 /// Users are encouraged to use `z_attachment_null` and `z_attachment_check` to interact.
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct z_attachment_t {
     data: *const c_void,
     vtable: Option<&'static z_attachment_vtable_t>,
@@ -288,6 +291,43 @@ const Z_BYTES_MAP_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
     iteration_driver: unsafe {
         core::mem::transmute(z_bytes_map_iter as extern "C" fn(_, _, _) -> i8)
     },
+};
+
+//TODO(sashacmc): avoid to export it to the API, how?
+#[no_mangle]
+pub extern "C" fn insert_in_attachment(key: z_bytes_t, value: z_bytes_t, ctx: *mut c_void) -> i8 {
+    let attachments_ref: &mut Attachment = unsafe { &mut *(ctx as *mut Attachment) };
+    attachments_ref.insert(key.as_slice().unwrap(), value.as_slice().unwrap());
+    0
+}
+
+#[no_mangle]
+extern "C" fn attachment_len(this: *const c_void) -> usize {
+    let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
+    return attachments_ref.len();
+}
+
+#[no_mangle]
+pub extern "C" fn attachment_iter(
+    this: *const c_void,
+    body: z_attachment_iter_body_t,
+    ctx: *mut c_void,
+) -> i8 {
+    let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
+    //if let Some(attachments_ref) = attachments_ref.as_ref() {
+    for (key, value) in attachments_ref.iter() {
+        let result = body(key.as_ref().into(), value.as_ref().into(), ctx);
+        if result != 0 {
+            return result;
+        }
+    }
+    //}
+    0
+}
+
+pub const ATTACHMENT_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
+    len: attachment_len,
+    iteration_driver: attachment_iter,
 };
 
 /// Aliases `this` into a generic `z_attachment_t`, allowing it to be passed to corresponding APIs.

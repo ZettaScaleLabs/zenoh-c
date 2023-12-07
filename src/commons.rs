@@ -12,8 +12,6 @@
 //   ZettaScale Zenoh team, <zenoh@zettascale.tech>
 //
 
-use crate::attachment::z_attachment_null;
-use crate::attachment::z_attachment_t;
 use crate::collections::*;
 use crate::keyexpr::*;
 use crate::z_id_t;
@@ -26,6 +24,8 @@ use zenoh::query::ReplyKeyExpr;
 use zenoh::sample::Locality;
 use zenoh::sample::Sample;
 use zenoh_protocol::core::Timestamp;
+
+use crate::attachment::{z_attachment, z_attachment_null, z_attachment_t, ATTACHMENT_VTABLE};
 
 /// A zenoh unsigned integer
 #[allow(non_camel_case_types)]
@@ -221,7 +221,12 @@ impl<'a> z_sample_t<'a> {
             _zc_buf: unsafe { std::mem::transmute(owner) },
             kind: sample.kind.into(),
             timestamp: sample.timestamp.as_ref().into(),
-            attachment: z_attachment_null(),
+            attachment: match &sample.attachment {
+                Some(attachment) => {
+                    z_attachment(attachment as *const _ as *mut c_void, &ATTACHMENT_VTABLE)
+                }
+                None => z_attachment_null(),
+            },
         }
     }
 }

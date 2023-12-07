@@ -23,13 +23,17 @@
 
 const char *kind_to_str(z_sample_kind_t kind);
 
+int8_t attachment_reader(z_bytes_t key, z_bytes_t val, void *ctx) {
+    printf("   attachment: %.*s: %.*s\n", (int)key.len, key.start, (int)val.len, val.start);
+    return 0;
+}
+
 void data_handler(const z_sample_t *sample, void *arg) {
     z_owned_str_t keystr = z_keyexpr_to_string(sample->keyexpr);
     printf(">> [Subscriber] Received %s ('%s': '%.*s')\n", kind_to_str(sample->kind), z_loan(keystr),
            (int)sample->payload.len, sample->payload.start);
     if (z_check(sample->attachment)) {
-        z_owned_bytes_map_t map = z_bytes_map_from_attachment(sample->attachment);
-        z_bytes_t there = z_bytes_map_get(&map, z_bytes_new("hello"));
+        int res = z_attachment_iterate(sample->attachment, attachment_reader, NULL);
     }
     z_drop(z_move(keystr));
 }

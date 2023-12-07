@@ -11,16 +11,21 @@
 // Contributors:
 //   ZettaScale Zenoh team, <zenoh@zettascale.tech>
 //
-use crate::attachment::z_attachment_null;
-use crate::attachment::z_attachment_t;
 use crate::commons::*;
 use crate::keyexpr::*;
 use crate::session::*;
 use crate::LOG_INVALID_SESSION;
+use libc::c_void;
 use libc::size_t;
 use zenoh::prelude::{sync::SyncResolve, Priority, SampleKind};
 use zenoh::publication::CongestionControl;
+use zenoh::sample::Attachment;
 use zenoh_util::core::zresult::ErrNo;
+
+use crate::attachment::{
+    insert_in_attachment, z_attachment_check, z_attachment_iterate, z_attachment_null,
+    z_attachment_t,
+};
 
 /// The priority of zenoh messages.
 ///
@@ -160,6 +165,15 @@ pub unsafe extern "C" fn z_put(
                     .encoding(opts.encoding)
                     .congestion_control(opts.congestion_control.into())
                     .priority(opts.priority.into());
+                if z_attachment_check(&opts.attachment) {
+                    let mut attachment = Attachment::new();
+                    z_attachment_iterate(
+                        opts.attachment,
+                        insert_in_attachment,
+                        &mut attachment as *mut Attachment as *mut c_void,
+                    );
+                    res = res.with_attachment(attachment);
+                };
             }
             match res.res_sync() {
                 Err(e) => {

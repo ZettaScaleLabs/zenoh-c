@@ -130,7 +130,7 @@ pub extern "C" fn z_attachment_get(this: z_attachment_t, key: z_bytes_t) -> z_by
     }
 
     let mut context = attachment_get_iterator_context {
-        key: key,
+        key,
         value: z_bytes_null(),
     };
 
@@ -304,7 +304,7 @@ pub extern "C" fn insert_in_attachment(key: z_bytes_t, value: z_bytes_t, ctx: *m
 #[no_mangle]
 extern "C" fn attachment_len(this: *const c_void) -> usize {
     let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
-    return attachments_ref.len();
+    attachments_ref.len()
 }
 
 #[no_mangle]

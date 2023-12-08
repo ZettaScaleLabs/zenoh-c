@@ -28,9 +28,6 @@ void writting_through_map_by_alias_read_by_get() {
     z_bytes_map_insert_by_alias(&map, z_bytes_new("k2"), z_bytes_new("v2"));
     z_attachment_t attachment = z_bytes_map_as_attachment(&map);
 
-    // Size check
-    assert(z_attachment_len(attachment) == 2);
-
     // Elements check
     z_bytes_t a1 = z_attachment_get(attachment, z_bytes_new("k1"));
     assert(a1.start != NULL);
@@ -67,9 +64,6 @@ void writting_through_map_by_copy_read_by_iter() {
     z_bytes_map_insert_by_copy(&map, z_bytes_new("k2"), z_bytes_new("v2"));
     z_attachment_t attachment = z_bytes_map_as_attachment(&map);
 
-    // Size check
-    assert(z_attachment_len(attachment) == 2);
-
     // Elements check
     int res = z_attachment_iterate(attachment, _attachment_reader, (void*)42);
     assert(res == 24);
@@ -86,14 +80,9 @@ int8_t _iteration_driver(const void* data, z_attachment_iter_body_t body, void* 
     ret = body(z_bytes_new("k2"), z_bytes_new("v2"), ctx);
     return ret;
 }
-size_t _len(const void* data) { return 2; }
 
 void writting_no_map_read_by_get() {
-    z_attachment_vtable_t vtable = {.len = _len, .iteration_driver = _iteration_driver};
-    z_attachment_t attachment = {.data = NULL, .vtable = &vtable};
-
-    // Size check
-    assert(z_attachment_len(attachment) == 2);
+    z_attachment_t attachment = {.data = NULL, .iteration_driver = &_iteration_driver};
 
     // Elements check
     z_bytes_t a1 = z_attachment_get(attachment, z_bytes_new("k1"));

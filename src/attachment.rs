@@ -20,39 +20,30 @@ pub type z_attachment_iter_body_t =
 ///
 /// This function is expected to call `loop_body` once for each key-value pair
 /// within `iterator`, passing `context`, and returning any non-zero value immediately (breaking iteration).
-pub type z_attachment_iter_driver_t = extern "C" fn(
-    iterator: *const c_void,
-    loop_body: z_attachment_iter_body_t,
-    context: *mut c_void,
-) -> i8;
 
-/// Returns the number of key-value pairs within the attachment.
-pub type z_attachment_len_t = extern "C" fn(*const c_void) -> usize;
+pub type z_attachment_iter_driver_t = Option<
+    extern "C" fn(
+        iterator: *const c_void,
+        loop_body: z_attachment_iter_body_t,
+        context: *mut c_void,
+    ) -> i8,
+>;
 
-/// The v-table for an attachment.
-#[repr(C)]
-pub struct z_attachment_vtable_t {
-    /// See `z_attachment_iteration_driver_t`'s documentation.
-    iteration_driver: z_attachment_iter_driver_t,
-    /// Returns the number of key-value pairs within the attachment.
-    len: z_attachment_len_t,
-}
-
-/// A v-table based map of byte slice to byte slice.
+/// A iteration based map of byte slice to byte slice.
 ///
-/// `vtable == NULL` marks the gravestone value, as this type is often optional.
+/// `iteration_driver == NULL` marks the gravestone value, as this type is often optional.
 /// Users are encouraged to use `z_attachment_null` and `z_attachment_check` to interact.
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct z_attachment_t {
     pub data: *const c_void,
-    pub vtable: Option<&'static z_attachment_vtable_t>,
+    pub iteration_driver: z_attachment_iter_driver_t,
 }
 
 /// Returns the gravestone value for `z_attachment_t`.
 #[no_mangle]
 pub extern "C" fn z_attachment_check(this: &z_attachment_t) -> bool {
-    this.vtable.is_some()
+    this.iteration_driver.is_some()
 }
 
 /// Returns the gravestone value for `z_attachment_t`.
@@ -60,7 +51,7 @@ pub extern "C" fn z_attachment_check(this: &z_attachment_t) -> bool {
 pub extern "C" fn z_attachment_null() -> z_attachment_t {
     z_attachment_t {
         data: core::ptr::null_mut(),
-        vtable: None,
+        iteration_driver: None,
     }
 }
 
@@ -76,7 +67,7 @@ pub extern "C" fn z_attachment_iterate(
     body: z_attachment_iter_body_t,
     context: *mut c_void,
 ) -> i8 {
-    (this.vtable.unwrap().iteration_driver)(this.data, body, context)
+    (this.iteration_driver.unwrap())(this.data, body, context)
 }
 
 /// Returns the value associated with the key.
@@ -108,8 +99,8 @@ pub extern "C" fn z_attachment_get(this: z_attachment_t, key: z_bytes_t) -> z_by
         value: z_bytes_null(),
     };
 
-    if this.vtable.map_or(false, |vtable| {
-        (vtable.iteration_driver)(
+    if this.iteration_driver.map_or(false, |iteration_driver| {
+        (iteration_driver)(
             this.data,
             attachment_get_iterator,
             &mut context as *mut _ as *mut c_void,
@@ -119,12 +110,6 @@ pub extern "C" fn z_attachment_get(this: z_attachment_t, key: z_bytes_t) -> z_by
     } else {
         z_bytes_null()
     }
-}
-
-/// Returns the number of key-value pairs in `this`.
-#[no_mangle]
-pub extern "C" fn z_attachment_len(this: z_attachment_t) -> usize {
-    (this.vtable.unwrap().len)(this.data)
 }
 
 /// A map of maybe-owned vector of bytes to owned vector of bytes.
@@ -223,15 +208,6 @@ pub extern "C" fn z_bytes_map_insert_by_alias(
     }
 }
 
-/// Returns the number of key-value pairs in the map.
-///
-/// Calling this with `NULL` or the gravestone value is undefined behaviour.
-#[no_mangle]
-extern "C" fn z_bytes_map_len(this: &z_owned_bytes_map_t) -> usize {
-    let this = unsafe { &*this.get() };
-    this.as_ref().map_or(0, |this| this.len())
-}
-
 /// Iterates over the key-value pairs in the map.
 ///
 /// `body` will be called once per pair, with `ctx` as its last argument.
@@ -260,25 +236,29 @@ pub extern "C" fn z_bytes_map_iter(
     0
 }
 
-const Z_BYTES_MAP_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
-    len: unsafe { core::mem::transmute(z_bytes_map_len as extern "C" fn(_) -> usize) },
-    iteration_driver: unsafe {
-        core::mem::transmute(z_bytes_map_iter as extern "C" fn(_, _, _) -> i8)
-    },
-};
+const Z_BYTES_MAP_ITERATION_DRIVER: z_attachment_iter_driver_t =
+    Some(unsafe { core::mem::transmute(z_bytes_map_iter as extern "C" fn(_, _, _) -> i8) });
 
-pub extern "C" fn insert_in_attachment(key: z_bytes_t, value: z_bytes_t, ctx: *mut c_void) -> i8 {
+//pub(crate) extern "C" fn Z_BYTES_MAP_ITERATION_DRIVER(
+//    this: *const c_void,
+//    body: z_attachment_iter_body_t,
+//    ctx: *mut c_void,
+//) -> i8 {
+//    let r: &z_owned_bytes_map_t = unsafe { &*(this as *mut z_owned_bytes_map_t) };
+//    z_bytes_map_iter(r, body, ctx)
+//}
+
+pub(crate) extern "C" fn insert_in_attachment(
+    key: z_bytes_t,
+    value: z_bytes_t,
+    ctx: *mut c_void,
+) -> i8 {
     let attachments_ref: &mut Attachment = unsafe { &mut *(ctx as *mut Attachment) };
     attachments_ref.insert(key.as_slice().unwrap(), value.as_slice().unwrap());
     0
 }
 
-extern "C" fn attachment_len(this: *const c_void) -> usize {
-    let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
-    attachments_ref.len()
-}
-
-extern "C" fn attachment_iter_driver(
+pub(crate) extern "C" fn attachment_iteration_driver(
     this: *const c_void,
     body: z_attachment_iter_body_t,
     ctx: *mut c_void,
@@ -293,23 +273,18 @@ extern "C" fn attachment_iter_driver(
     0
 }
 
-pub(crate) const ATTACHMENT_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
-    len: attachment_len,
-    iteration_driver: attachment_iter_driver,
-};
-
 /// Aliases `this` into a generic `z_attachment_t`, allowing it to be passed to corresponding APIs.
 #[no_mangle]
 pub extern "C" fn z_bytes_map_as_attachment(this: &z_owned_bytes_map_t) -> z_attachment_t {
     if z_bytes_map_check(this) {
         z_attachment_t {
             data: this as *const z_owned_bytes_map_t as *mut _,
-            vtable: Some(&Z_BYTES_MAP_VTABLE),
+            iteration_driver: Z_BYTES_MAP_ITERATION_DRIVER,
         }
     } else {
         z_attachment_t {
             data: core::ptr::null_mut(),
-            vtable: None,
+            iteration_driver: None,
         }
     }
 }

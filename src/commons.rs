@@ -25,7 +25,7 @@ use zenoh::sample::Locality;
 use zenoh::sample::Sample;
 use zenoh_protocol::core::Timestamp;
 
-use crate::attachment::{z_attachment_null, z_attachment_t, ATTACHMENT_VTABLE};
+use crate::attachment::{attachment_iteration_driver, z_attachment_null, z_attachment_t};
 
 /// A zenoh unsigned integer
 #[allow(non_camel_case_types)]
@@ -224,7 +224,7 @@ impl<'a> z_sample_t<'a> {
             attachment: match &sample.attachment {
                 Some(attachment) => z_attachment_t {
                     data: attachment as *const _ as *mut c_void,
-                    vtable: Some(&ATTACHMENT_VTABLE),
+                    iteration_driver: Some(attachment_iteration_driver),
                 },
                 None => z_attachment_null(),
             },

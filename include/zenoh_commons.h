@@ -180,31 +180,14 @@ typedef int8_t (*z_attachment_iter_driver_t)(const void *iterator,
                                              z_attachment_iter_body_t loop_body,
                                              void *context);
 /**
- * Returns the number of key-value pairs within the attachment.
- */
-typedef size_t (*z_attachment_len_t)(const void*);
-/**
- * The v-table for an attachment.
- */
-typedef struct z_attachment_vtable_t {
-  /**
-   * See `z_attachment_iteration_driver_t`'s documentation.
-   */
-  z_attachment_iter_driver_t iteration_driver;
-  /**
-   * Returns the number of key-value pairs within the attachment.
-   */
-  z_attachment_len_t len;
-} z_attachment_vtable_t;
-/**
- * A v-table based map of byte slice to byte slice.
+ * A iteration based map of byte slice to byte slice.
  *
- * `vtable == NULL` marks the gravestone value, as this type is often optional.
+ * `iteration_driver == NULL` marks the gravestone value, as this type is often optional.
  * Users are encouraged to use `z_attachment_null` and `z_attachment_check` to interact.
  */
 typedef struct z_attachment_t {
   const void *data;
-  const struct z_attachment_vtable_t *vtable;
+  z_attachment_iter_driver_t iteration_driver;
 } z_attachment_t;
 /**
  * A map of maybe-owned vector of bytes to owned vector of bytes.
@@ -908,10 +891,6 @@ ZENOHC_API
 int8_t z_attachment_iterate(struct z_attachment_t this_,
                             z_attachment_iter_body_t body,
                             void *context);
-/**
- * Returns the number of key-value pairs in `this`.
- */
-ZENOHC_API size_t z_attachment_len(struct z_attachment_t this_);
 /**
  * Returns the gravestone value for `z_attachment_t`.
  */

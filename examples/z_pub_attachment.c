@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 ZettaScale Technology
+// Copyright (c) 2023 ZettaScale Technology
 //
 // This program and the accompanying materials are made available under the
 // terms of the Eclipse Public License 2.0 which is available at
@@ -54,18 +54,36 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
+    z_publisher_put_options_t options = z_publisher_put_options_default();
+    options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);
+
+    // allocate attachment map
+    z_owned_bytes_map_t map = z_bytes_map_new();
+
+    // set it as an attachment
+    options.attachment = z_bytes_map_as_attachment(&map);
+
+    // add some value
+    z_bytes_map_insert_by_alias(&map, z_bytes_new("source"), z_bytes_new("C"));
+
     char buf[256];
+    char buf_ind[16];
     for (int idx = 0; 1; ++idx) {
         sleep(1);
+
+        // add some other attachment value
+        sprintf(buf_ind, "%d", idx);
+        z_bytes_map_insert_by_alias(&map, z_bytes_new("index"), z_bytes_new(buf_ind));
+
         sprintf(buf, "[%4d] %s", idx, value);
         printf("Putting Data ('%s': '%s')...\n", keyexpr, buf);
-        z_publisher_put_options_t options = z_publisher_put_options_default();
-        options.encoding = z_encoding(Z_ENCODING_PREFIX_TEXT_PLAIN, NULL);
         z_publisher_put(z_loan(pub), (const uint8_t *)buf, strlen(buf), &options);
     }
 
     z_undeclare_publisher(z_move(pub));
 
     z_close(z_move(s));
+    z_drop(z_move(map));
+
     return 0;
 }

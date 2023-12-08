@@ -24,7 +24,7 @@
 const char *kind_to_str(z_sample_kind_t kind);
 
 int8_t attachment_reader(z_bytes_t key, z_bytes_t val, void *ctx) {
-    printf("   attachment: %.*s: \"%.*s\"\n", (int)key.len, key.start, (int)val.len, val.start);
+    printf("   attachment: %.*s: '%.*s'\n", (int)key.len, key.start, (int)val.len, val.start);
     return 0;
 }
 

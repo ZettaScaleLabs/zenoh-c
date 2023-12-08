@@ -267,7 +267,6 @@ const Z_BYTES_MAP_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
     },
 };
 
-//TODO(sashacmc): avoid to export it to the API, how?
 pub extern "C" fn insert_in_attachment(key: z_bytes_t, value: z_bytes_t, ctx: *mut c_void) -> i8 {
     let attachments_ref: &mut Attachment = unsafe { &mut *(ctx as *mut Attachment) };
     attachments_ref.insert(key.as_slice().unwrap(), value.as_slice().unwrap());
@@ -284,7 +283,7 @@ extern "C" fn attachment_iter_driver(
     body: z_attachment_iter_body_t,
     ctx: *mut c_void,
 ) -> i8 {
-    let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
+    let attachments_ref: &Attachment = unsafe { &*(this as *mut Attachment) };
     for (key, value) in attachments_ref.iter() {
         let result = body(key.as_ref().into(), value.as_ref().into(), ctx);
         if result != 0 {
@@ -294,7 +293,7 @@ extern "C" fn attachment_iter_driver(
     0
 }
 
-pub const ATTACHMENT_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
+pub(crate) const ATTACHMENT_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
     len: attachment_len,
     iteration_driver: attachment_iter_driver,
 };

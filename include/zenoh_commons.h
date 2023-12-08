@@ -875,14 +875,6 @@ ZENOHC_API extern const char *Z_CONFIG_MULTICAST_IPV4_ADDRESS_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_TIMEOUT_KEY;
 ZENOHC_API extern const char *Z_CONFIG_SCOUTING_DELAY_KEY;
 ZENOHC_API extern const char *Z_CONFIG_ADD_TIMESTAMP_KEY;
-ZENOHC_API int8_t attachment_iter(const void *this_, z_attachment_iter_body_t body, void *ctx);
-ZENOHC_API int8_t insert_in_attachment(struct z_bytes_t key, struct z_bytes_t value, void *ctx);
-/**
- * Constructs a specific :c:type:`z_attachment_t`.
- */
-ZENOHC_API
-struct z_attachment_t z_attachment(const void *data,
-                                   const struct z_attachment_vtable_t *vtable);
 /**
  * Returns the gravestone value for `z_attachment_t`.
  */
@@ -911,12 +903,6 @@ ZENOHC_API size_t z_attachment_len(struct z_attachment_t this_);
  * Returns the gravestone value for `z_attachment_t`.
  */
 ZENOHC_API struct z_attachment_t z_attachment_null(void);
-/**
- * Constructs a specific :c:type:`z_attachment_vtable_t`.
- */
-ZENOHC_API
-struct z_attachment_vtable_t z_attachment_vtable(z_attachment_iter_driver_t iteration_driver,
-                                                 z_attachment_len_t len);
 /**
  * Returns ``true`` if `b` is initialized.
  */

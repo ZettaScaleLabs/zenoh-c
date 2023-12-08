@@ -38,19 +38,6 @@ pub struct z_attachment_vtable_t {
     len: z_attachment_len_t,
 }
 
-/// Constructs a specific :c:type:`z_attachment_vtable_t`.
-#[no_mangle]
-#[allow(clippy::missing_safety_doc)]
-pub extern "C" fn z_attachment_vtable(
-    iteration_driver: z_attachment_iter_driver_t,
-    len: z_attachment_len_t,
-) -> z_attachment_vtable_t {
-    z_attachment_vtable_t {
-        iteration_driver,
-        len,
-    }
-}
-
 /// A v-table based map of byte slice to byte slice.
 ///
 /// `vtable == NULL` marks the gravestone value, as this type is often optional.
@@ -58,8 +45,8 @@ pub extern "C" fn z_attachment_vtable(
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct z_attachment_t {
-    data: *const c_void,
-    vtable: Option<&'static z_attachment_vtable_t>,
+    pub data: *const c_void,
+    pub vtable: Option<&'static z_attachment_vtable_t>,
 }
 
 /// Returns the gravestone value for `z_attachment_t`.
@@ -74,19 +61,6 @@ pub extern "C" fn z_attachment_null() -> z_attachment_t {
     z_attachment_t {
         data: core::ptr::null_mut(),
         vtable: None,
-    }
-}
-
-/// Constructs a specific :c:type:`z_attachment_t`.
-#[no_mangle]
-#[allow(clippy::missing_safety_doc)]
-pub extern "C" fn z_attachment(
-    data: *const c_void,
-    vtable: &'static z_attachment_vtable_t,
-) -> z_attachment_t {
-    z_attachment_t {
-        data,
-        vtable: Some(vtable),
     }
 }
 
@@ -294,40 +268,35 @@ const Z_BYTES_MAP_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
 };
 
 //TODO(sashacmc): avoid to export it to the API, how?
-#[no_mangle]
 pub extern "C" fn insert_in_attachment(key: z_bytes_t, value: z_bytes_t, ctx: *mut c_void) -> i8 {
     let attachments_ref: &mut Attachment = unsafe { &mut *(ctx as *mut Attachment) };
     attachments_ref.insert(key.as_slice().unwrap(), value.as_slice().unwrap());
     0
 }
 
-#[no_mangle]
 extern "C" fn attachment_len(this: *const c_void) -> usize {
     let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
     attachments_ref.len()
 }
 
-#[no_mangle]
-pub extern "C" fn attachment_iter(
+extern "C" fn attachment_iter_driver(
     this: *const c_void,
     body: z_attachment_iter_body_t,
     ctx: *mut c_void,
 ) -> i8 {
     let attachments_ref: &mut Attachment = unsafe { &mut *(this as *mut Attachment) };
-    //if let Some(attachments_ref) = attachments_ref.as_ref() {
     for (key, value) in attachments_ref.iter() {
         let result = body(key.as_ref().into(), value.as_ref().into(), ctx);
         if result != 0 {
             return result;
         }
     }
-    //}
     0
 }
 
 pub const ATTACHMENT_VTABLE: z_attachment_vtable_t = z_attachment_vtable_t {
     len: attachment_len,
-    iteration_driver: attachment_iter,
+    iteration_driver: attachment_iter_driver,
 };
 
 /// Aliases `this` into a generic `z_attachment_t`, allowing it to be passed to corresponding APIs.

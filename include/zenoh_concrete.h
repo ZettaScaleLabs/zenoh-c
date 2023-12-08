@@ -117,4 +117,3 @@ typedef struct ALIGN(4) z_owned_subscriber_t {
   uint32_t _0[1];
 } z_owned_subscriber_t;
 #endif
-#define ATTACHMENT_VTABLE (z_attachment_vtable_t){ .iteration_driver = attachment_iter_driver, .len = attachment_len }

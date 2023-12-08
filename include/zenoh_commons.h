@@ -313,12 +313,12 @@ typedef struct ALIGN(8) z_owned_reply_t {
 #endif
 #if defined(TARGET_ARCH_AARCH64)
 typedef struct ALIGN(16) z_owned_reply_t {
-  uint64_t _0[24];
+  uint64_t _0[30];
 } z_owned_reply_t;
 #endif
 #if defined(TARGET_ARCH_ARM)
 typedef struct ALIGN(8) z_owned_reply_t {
-  uint64_t _0[17];
+  uint64_t _0[19];
 } z_owned_reply_t;
 #endif
 /**

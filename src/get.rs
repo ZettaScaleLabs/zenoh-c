@@ -48,11 +48,11 @@ pub struct z_owned_reply_t([u64; 28]);
 
 #[cfg(target_arch = "aarch64")]
 #[repr(C, align(16))]
-pub struct z_owned_reply_t([u64; 24]);
+pub struct z_owned_reply_t([u64; 30]);
 
 #[cfg(target_arch = "arm")]
 #[repr(C, align(8))]
-pub struct z_owned_reply_t([u64; 17]); //TODO(sashacmc): adjust this size
+pub struct z_owned_reply_t([u64; 19]);
 
 impl_guarded_transmute!(ReplyInner, z_owned_reply_t);
 

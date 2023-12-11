@@ -600,6 +600,7 @@ typedef struct z_get_options_t {
   enum z_query_target_t target;
   struct z_query_consolidation_t consolidation;
   struct z_value_t value;
+  struct z_attachment_t attachment;
   uint64_t timeout_ms;
 } z_get_options_t;
 /**
@@ -698,6 +699,7 @@ typedef struct z_owned_query_t {
  */
 typedef struct z_query_reply_options_t {
   struct z_encoding_t encoding;
+  struct z_attachment_t attachment;
 } z_query_reply_options_t;
 /**
  * A closure is a structure that contains all the elements for stateful, memory-leak-free callbacks:
@@ -1586,6 +1588,7 @@ int8_t z_put(struct z_session_t session,
  * Constructs the default value for :c:type:`z_put_options_t`.
  */
 ZENOHC_API struct z_put_options_t z_put_options_default(void);
+ZENOHC_API struct z_attachment_t z_query_attachment(const struct z_query_t *query);
 /**
  * Returns `false` if `this` is in a gravestone state, `true` otherwise.
  *

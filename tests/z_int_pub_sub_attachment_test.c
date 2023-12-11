@@ -60,6 +60,7 @@ int run_publisher() {
 
     z_undeclare_publisher(z_move(pub));
     z_close(z_move(s));
+    z_drop(z_move(map));
     return 0;
 }
 
@@ -78,12 +79,10 @@ void data_handler(const z_sample_t *sample, void *arg) {
     }
 
     z_bytes_t v_const = z_attachment_get(sample->attachment, z_bytes_new(K_CONST));
-    assert(strlen(V_CONST) == v_const.len);
-    assert(!strncmp(V_CONST, v_const.start, v_const.len));
+    ASSERT_STR_BYTES_EQUAL(V_CONST, v_const);
 
     z_bytes_t v_var = z_attachment_get(sample->attachment, z_bytes_new(K_VAR));
-    assert(strlen(values[val_num]) == v_var.len);
-    assert(!strncmp(values[val_num], v_var.start, v_var.len));
+    ASSERT_STR_BYTES_EQUAL(values[val_num], v_var);
 
     if (++val_num == values_count) {
         exit(0);

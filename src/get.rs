@@ -13,6 +13,7 @@
 //
 
 use libc::c_char;
+use libc::c_void;
 use std::{
     borrow::Cow,
     convert::TryFrom,
@@ -23,10 +24,15 @@ use std::{
 use zenoh::{
     prelude::{ConsolidationMode, KeyExpr, QueryTarget, SplitBuffer},
     query::{Mode, QueryConsolidation, Reply},
+    sample::Attachment,
     value::Value,
 };
 use zenoh_util::core::{zresult::ErrNo, SyncResolve};
 
+use crate::attachment::{
+    insert_in_attachment, z_attachment_check, z_attachment_iterate, z_attachment_null,
+    z_attachment_t,
+};
 use crate::{
     impl_guarded_transmute, z_bytes_t, z_closure_reply_call, z_encoding_default, z_encoding_t,
     z_keyexpr_t, z_owned_closure_reply_t, z_sample_t, z_session_t, GuardedTransmute,
@@ -163,6 +169,7 @@ pub struct z_get_options_t {
     pub target: z_query_target_t,
     pub consolidation: z_query_consolidation_t,
     pub value: z_value_t,
+    pub attachment: z_attachment_t,
     pub timeout_ms: u64,
 }
 #[no_mangle]
@@ -177,6 +184,7 @@ pub extern "C" fn z_get_options_default() -> z_get_options_t {
                 encoding: z_encoding_default(),
             }
         },
+        attachment: z_attachment_null(),
     }
 }
 
@@ -223,6 +231,15 @@ pub unsafe extern "C" fn z_get(
         if options.timeout_ms != 0 {
             q = q.timeout(std::time::Duration::from_millis(options.timeout_ms));
         }
+        if z_attachment_check(&options.attachment) {
+            let mut attachment = Attachment::new();
+            z_attachment_iterate(
+                options.attachment,
+                insert_in_attachment,
+                &mut attachment as *mut Attachment as *mut c_void,
+            );
+            q = q.with_attachment(attachment);
+        };
     }
     match q
         .callback(move |response| z_closure_reply_call(&closure, &mut response.into()))

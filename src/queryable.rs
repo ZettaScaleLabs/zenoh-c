@@ -11,6 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh team, <zenoh@zettascale.tech>
 //
+use crate::attachment::{
+    attachment_iteration_driver, insert_in_attachment, z_attachment_check, z_attachment_iterate,
+    z_attachment_null, z_attachment_t,
+};
 use crate::{
     impl_guarded_transmute, z_bytes_t, z_closure_query_call, z_encoding_default, z_encoding_t,
     z_keyexpr_t, z_owned_closure_query_t, z_session_t, z_value_t, GuardedTransmute,
@@ -22,6 +26,7 @@ use zenoh::prelude::SessionDeclarations;
 use zenoh::{
     prelude::{Sample, SplitBuffer},
     queryable::{Query, Queryable as CallbackQueryable},
+    sample::Attachment,
     value::Value,
 };
 use zenoh_util::core::{zresult::ErrNo, SyncResolve};
@@ -173,6 +178,7 @@ pub extern "C" fn z_queryable_options_default() -> z_queryable_options_t {
 #[repr(C)]
 pub struct z_query_reply_options_t {
     pub encoding: z_encoding_t,
+    pub attachment: z_attachment_t,
 }
 
 /// Constructs the default value for :c:type:`z_query_reply_options_t`.
@@ -181,6 +187,7 @@ pub struct z_query_reply_options_t {
 pub extern "C" fn z_query_reply_options_default() -> z_query_reply_options_t {
     z_query_reply_options_t {
         encoding: z_encoding_default(),
+        attachment: z_attachment_null(),
     }
 }
 
@@ -282,6 +289,15 @@ pub unsafe extern "C" fn z_query_reply(
         );
         if let Some(o) = options {
             s.encoding = o.encoding.into();
+            if z_attachment_check(&o.attachment) {
+                let mut attachment = Attachment::new();
+                z_attachment_iterate(
+                    o.attachment,
+                    insert_in_attachment,
+                    &mut attachment as *mut Attachment as *mut c_void,
+                );
+                s = s.with_attachment(attachment);
+            };
         }
         if let Err(e) = query.reply(Ok(s)).res_sync() {
             log::error!("{}", e);
@@ -332,5 +348,17 @@ pub unsafe extern "C" fn z_query_value(query: &z_query_t) -> z_value_t {
             value.into()
         }
         None => (&Value::empty()).into(),
+    }
+}
+
+#[allow(clippy::missing_safety_doc)]
+#[no_mangle]
+pub unsafe extern "C" fn z_query_attachment(query: &z_query_t) -> z_attachment_t {
+    match query.as_ref().and_then(|q| q.attachment()) {
+        Some(attachment) => z_attachment_t {
+            data: attachment as *const _ as *mut c_void,
+            iteration_driver: Some(attachment_iteration_driver),
+        },
+        None => z_attachment_null(),
     }
 }

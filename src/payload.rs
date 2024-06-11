@@ -13,7 +13,7 @@ use std::mem::MaybeUninit;
 use std::os::raw::c_void;
 use std::slice::from_raw_parts;
 use std::slice::from_raw_parts_mut;
-use zenoh::buffers::{ZBuf, ZSlice, ZSliceBuffer};
+use zenoh::internal::buffers::{ZSliceBuffer, ZSlice};
 use zenoh::bytes::{
     Deserialize, Serialize, ZBytes, ZBytesIterator, ZBytesReader, ZBytesWriter, ZSerde,
 };
@@ -552,9 +552,9 @@ struct ZBytesInIterator {
 }
 
 impl Iterator for ZBytesInIterator {
-    type Item = ZBuf;
+    type Item = ZBytes;
 
-    fn next(&mut self) -> Option<ZBuf> {
+    fn next(&mut self) -> Option<ZBytes> {
         let mut data = MaybeUninit::<z_owned_bytes_t>::uninit();
 
         if !(self.body)(&mut data, self.context) {
@@ -592,13 +592,13 @@ pub extern "C" fn z_bytes_encode_from_iter(
 }
 
 pub use crate::z_bytes_iterator_t;
-decl_transmute_handle!(ZBytesIterator<'static, ZBuf>, z_bytes_iterator_t);
+decl_transmute_handle!(ZBytesIterator<'static, ZBytes>, z_bytes_iterator_t);
 /// Returns an iterator for multi-piece serialized data.
 ///
 /// The `data` should outlive the iterator.
 #[no_mangle]
 pub extern "C" fn z_bytes_get_iterator(data: &z_loaned_bytes_t) -> z_bytes_iterator_t {
-    *data.transmute_ref().iter::<ZBuf>().transmute_handle()
+    *data.transmute_ref().iter::<ZBytes>().transmute_handle()
 }
 
 /// Constructs `z_owned_bytes` object corresponding to the next element of encoded data.
@@ -631,7 +631,7 @@ pub extern "C" fn z_bytes_iter(
     context: *mut c_void,
 ) -> z_error_t {
     let mut res = Z_OK;
-    for zb in this.transmute_ref().iter::<ZBuf>() {
+    for zb in this.transmute_ref().iter::<ZBytes>() {
         let b = ZBytes::new(zb);
         res = iterator_body(b.transmute_handle(), context);
         if res != Z_OK {

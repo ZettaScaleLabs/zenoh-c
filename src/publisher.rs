@@ -37,7 +37,7 @@ use zenoh::sample::QoSBuilderTrait;
 use zenoh::sample::SampleBuilderTrait;
 use zenoh::sample::TimestampBuilderTrait;
 use zenoh::sample::ValueBuilderTrait;
-use zenoh::{publisher::MatchingListener, publisher::Priority, publisher::Publisher};
+use zenoh::{core::Priority, publisher::MatchingListener, publisher::Publisher};
 
 use crate::{
     z_congestion_control_t, z_loaned_keyexpr_t, z_loaned_session_t, z_owned_bytes_t, z_priority_t,

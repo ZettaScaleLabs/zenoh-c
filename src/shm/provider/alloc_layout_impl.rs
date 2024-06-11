@@ -16,8 +16,8 @@ use std::mem::MaybeUninit;
 
 use libc::c_void;
 use zenoh::shm::{
-    AllocLayout, AllocPolicy, DynamicProtocolID, PosixSharedMemoryProviderBackend,
-    ProtocolIDSource, SharedMemoryProviderBackend, StaticProtocolID, POSIX_PROTOCOL_ID,
+    AllocLayout, AllocPolicy, DynamicProtocolID, PosixShmProviderBackend,
+    ProtocolIDSource, ShmProviderBackend, StaticProtocolID, POSIX_PROTOCOL_ID,
 };
 use zenoh::{prelude::*, shm::AsyncAllocPolicy};
 
@@ -27,21 +27,21 @@ use crate::{
     transmute::{Inplace, TransmuteCopy, TransmuteFromHandle, TransmuteUninitPtr},
     z_owned_buf_alloc_result_t,
 };
-use crate::{z_loaned_alloc_layout_t, z_loaned_shared_memory_provider_t, z_owned_alloc_layout_t};
+use crate::{z_loaned_alloc_layout_t, z_loaned_shm_provider_t, z_owned_alloc_layout_t};
 
 use super::{
-    alloc_layout::CSHMLayout, shared_memory_provider_backend::DynamicSharedMemoryProviderBackend,
+    alloc_layout::CSHMLayout, shm_provider_backend::DynamicShmProviderBackend,
     types::z_alloc_alignment_t,
 };
 
 pub(crate) fn alloc_layout_new(
     this: *mut MaybeUninit<z_owned_alloc_layout_t>,
-    provider: &z_loaned_shared_memory_provider_t,
+    provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
 ) -> z_error_t {
     let layout = match provider.transmute_ref() {
-        super::shared_memory_provider::CSHMProvider::Posix(provider) => {
+        super::shm_provider::CSHMProvider::Posix(provider) => {
             match provider
                 .alloc(size)
                 .with_alignment(alignment.transmute_copy())
@@ -54,7 +54,7 @@ pub(crate) fn alloc_layout_new(
                 }
             }
         }
-        super::shared_memory_provider::CSHMProvider::Dynamic(provider) => {
+        super::shm_provider::CSHMProvider::Dynamic(provider) => {
             match provider
                 .alloc(size)
                 .with_alignment(alignment.transmute_copy())
@@ -67,7 +67,7 @@ pub(crate) fn alloc_layout_new(
                 }
             }
         }
-        super::shared_memory_provider::CSHMProvider::DynamicThreadsafe(provider) => {
+        super::shm_provider::CSHMProvider::DynamicThreadsafe(provider) => {
             match provider
                 .alloc(size)
                 .with_alignment(alignment.transmute_copy())
@@ -118,7 +118,7 @@ pub(crate) fn alloc_async<Policy: AsyncAllocPolicy>(
             alloc_async_impl::<
                 Policy,
                 StaticProtocolID<POSIX_PROTOCOL_ID>,
-                PosixSharedMemoryProviderBackend,
+                PosixShmProviderBackend,
             >(out_result, layout, result_context, result_callback);
             Z_OK
         }
@@ -127,7 +127,7 @@ pub(crate) fn alloc_async<Policy: AsyncAllocPolicy>(
             alloc_async_impl::<
                 Policy,
                 DynamicProtocolID,
-                DynamicSharedMemoryProviderBackend<ThreadsafeContext>,
+                DynamicShmProviderBackend<ThreadsafeContext>,
             >(out_result, layout, result_context, result_callback);
             Z_OK
         }
@@ -137,7 +137,7 @@ pub(crate) fn alloc_async<Policy: AsyncAllocPolicy>(
 pub fn alloc_async_impl<
     Policy: AsyncAllocPolicy,
     IDSource: ProtocolIDSource,
-    Backend: SharedMemoryProviderBackend + Send + Sync,
+    Backend: ShmProviderBackend + Send + Sync,
 >(
     out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
     layout: &'static AllocLayout<'static, IDSource, Backend>,

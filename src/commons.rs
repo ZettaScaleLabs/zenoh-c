@@ -34,9 +34,9 @@ use crate::z_owned_string_t;
 use crate::z_string_from_substring;
 use libc::{c_char, c_ulong};
 use unwrap_infallible::UnwrapInfallible;
+use zenoh::core::Priority;
 use zenoh::encoding::Encoding;
 use zenoh::publisher::CongestionControl;
-use zenoh::publisher::Priority;
 use zenoh::query::ConsolidationMode;
 use zenoh::query::QueryTarget;
 use zenoh::query::ReplyKeyExpr;
@@ -606,7 +606,7 @@ pub extern "C" fn z_entity_global_id_new(
     eid: u32,
 ) -> errors::z_error_t {
     let entity_global_id = EntityGlobalId {
-        zid: zid.transmute_copy(),
+        zid: zid.transmute_copy().into(),
         eid,
     };
     *this = entity_global_id.transmute_copy();
@@ -616,7 +616,7 @@ pub extern "C" fn z_entity_global_id_new(
 /// Returns the zenoh id of entity global id.
 #[no_mangle]
 pub extern "C" fn z_entity_global_id_zid(this: &z_entity_global_id_t) -> z_id_t {
-    this.transmute_ref().zid.transmute_copy()
+    this.transmute_ref().zid.into().transmute_copy()
 }
 /// Returns the entity id of the entity global id.
 #[no_mangle]

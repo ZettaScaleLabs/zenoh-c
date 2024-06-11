@@ -11,8 +11,8 @@ unstable = ["zenoh/unstable", "zenoh-ext/unstable"]
 default = ["zenoh/default"]
 
 [dependencies]
-zenoh = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "dev/1.0.0", default-features = false }
-zenoh-ext = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "dev/1.0.0" }
-zenoh-protocol = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "dev/1.0.0" }
+zenoh = { version = "0.11.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", branch = "shm_renaming", default-features = false }
+zenoh-ext = { version = "0.11.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", branch = "shm_renaming" }
+zenoh-protocol = { version = "0.11.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", branch = "shm_renaming" }
 const_format = "0.2.32"
 flume = "*"

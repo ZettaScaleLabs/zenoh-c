@@ -22,7 +22,6 @@ use crate::context::DroppableContext;
 use crate::transmute::TransmuteRef;
 use crate::{
     context::{zc_threadsafe_context_t, ThreadsafeContext},
-    errors,
     shm::common::types::z_segment_id_t,
     transmute::{Inplace, TransmuteUninitPtr},
 };
@@ -74,11 +73,9 @@ pub extern "C" fn z_shm_client_new(
     this: *mut MaybeUninit<z_owned_shm_client_t>,
     context: zc_threadsafe_context_t,
     callbacks: zc_shm_client_callbacks_t,
-) -> errors::z_error_t {
+) {
     let client = Arc::new(DynamicShmClient::new(context.into(), callbacks)) as Arc<dyn ShmClient>;
-
     Inplace::init(this.transmute_uninit_ptr(), Some(client));
-    errors::Z_OK
 }
 
 /// Constructs SHM client in its gravestone value.

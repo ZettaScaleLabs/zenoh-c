@@ -40,12 +40,9 @@ decl_transmute_handle!(
 
 /// Creates a new empty list of SHM Clients
 #[no_mangle]
-pub extern "C" fn zc_shm_client_list_new(
-    this: *mut MaybeUninit<zc_owned_shm_client_list_t>,
-) -> z_error_t {
+pub extern "C" fn zc_shm_client_list_new(this: *mut MaybeUninit<zc_owned_shm_client_list_t>) {
     let client_list: Vec<(ProtocolID, Arc<dyn ShmClient>)> = Vec::default();
     Inplace::init(this.transmute_uninit_ptr(), Some(client_list));
-    Z_OK
 }
 
 /// Constructs SHM client list in its gravestone value.
@@ -108,18 +105,17 @@ decl_transmute_handle!(Arc<ShmClientStorage>, z_loaned_shm_client_storage_t);
 #[no_mangle]
 pub extern "C" fn z_ref_shm_client_storage_global(
     this: *mut MaybeUninit<z_owned_shm_client_storage_t>,
-) -> z_error_t {
+) {
     Inplace::init(
         this.transmute_uninit_ptr(),
         Some(GLOBAL_CLIENT_STORAGE.clone()),
     );
-    Z_OK
 }
 
 #[no_mangle]
 pub extern "C" fn z_shm_client_storage_new_default(
     this: *mut MaybeUninit<z_owned_shm_client_storage_t>,
-) -> z_error_t {
+) {
     Inplace::init(
         this.transmute_uninit_ptr(),
         Some(Arc::new(
@@ -128,7 +124,6 @@ pub extern "C" fn z_shm_client_storage_new_default(
                 .build(),
         )),
     );
-    Z_OK
 }
 
 #[no_mangle]
@@ -150,6 +145,18 @@ pub extern "C" fn z_shm_client_storage_new(
     };
     Inplace::init(this.transmute_uninit_ptr(), Some(Arc::new(builder.build())));
     Z_OK
+}
+
+/// Performs a shallow copy of SHM Client Storage
+#[no_mangle]
+pub extern "C" fn z_shm_client_storage_new_cloned(
+    this: *mut MaybeUninit<z_owned_shm_client_storage_t>,
+    from: &z_loaned_shm_client_storage_t,
+) {
+    Inplace::init(
+        this.transmute_uninit_ptr(),
+        Some(from.transmute_ref().clone()),
+    );
 }
 
 /// Constructs SHM Client Storage in its gravestone value.

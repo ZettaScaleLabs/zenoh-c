@@ -30,7 +30,7 @@ use zenoh::info::{ZenohId, EntityGlobalId};
 use core::ffi::c_void;
 #[cfg(all(feature = "shared-memory", feature = "unstable"))]
 use zenoh::shm::{
-    ShmClient, ProtocolID, ShmClientStorage, AllocLayout,DynamicProtocolID, BufAllocResult,
+    ShmClient, ProtocolID, ShmClientStorage, AllocLayout,DynamicProtocolID,
     ChunkAllocResult, MemoryLayout, ZShmMut, ZShm, zshm, zshmmut, ShmProvider, ChunkDescriptor,
     ShmProviderBackend, PosixShmProviderBackend, StaticProtocolID, POSIX_PROTOCOL_ID
 };
@@ -283,13 +283,6 @@ get_opaque_type_data!(Option<ChunkAllocResult>, z_owned_chunk_alloc_result_t);
 #[cfg(all(feature = "shared-memory", feature = "unstable"))]
 /// A loaned ChunkAllocResult
 get_opaque_type_data!(ChunkAllocResult, z_loaned_chunk_alloc_result_t);
-
-#[cfg(all(feature = "shared-memory", feature = "unstable"))]
-/// An owned BufAllocResult
-get_opaque_type_data!(Option<BufAllocResult>, z_owned_buf_alloc_result_t);
-#[cfg(all(feature = "shared-memory", feature = "unstable"))]
-/// A loaned BufAllocResult
-get_opaque_type_data!(BufAllocResult, z_loaned_buf_alloc_result_t);
 
 #[cfg(all(feature = "shared-memory", feature = "unstable"))]
 /// An owned ZShm slice

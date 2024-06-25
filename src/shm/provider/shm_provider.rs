@@ -30,14 +30,14 @@ use crate::{
     transmute::{
         unwrap_ref_unchecked, Inplace, TransmuteIntoHandle, TransmuteRef, TransmuteUninitPtr,
     },
-    z_loaned_shm_provider_t, z_owned_buf_alloc_result_t, z_owned_shm_mut_t, z_owned_shm_provider_t,
+    z_loaned_shm_provider_t, z_owned_shm_mut_t, z_owned_shm_provider_t,
 };
 
 use super::{
     chunk::z_allocated_chunk_t,
     shm_provider_backend::{zc_shm_provider_backend_callbacks_t, DynamicShmProviderBackend},
     shm_provider_impl::{alloc, alloc_async, available, defragment, garbage_collect, map},
-    types::z_alloc_alignment_t,
+    types::{z_alloc_alignment_t, z_buf_layout_alloc_result_t},
 };
 
 pub type DynamicShmProvider = ShmProvider<DynamicProtocolID, DynamicShmProviderBackend<Context>>;
@@ -122,65 +122,64 @@ pub extern "C" fn z_shm_provider_drop(this: &mut z_owned_shm_provider_t) {
 
 #[no_mangle]
 pub extern "C" fn z_shm_provider_alloc(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     alloc::<JustAlloc>(out_result, provider, size, alignment)
 }
 
 #[no_mangle]
 pub extern "C" fn z_shm_provider_alloc_gc(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     alloc::<GarbageCollect>(out_result, provider, size, alignment)
 }
 
 #[no_mangle]
 pub extern "C" fn z_shm_provider_alloc_gc_defrag(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     alloc::<Defragment<GarbageCollect>>(out_result, provider, size, alignment)
 }
 
 #[no_mangle]
 pub extern "C" fn z_shm_provider_alloc_gc_defrag_dealloc(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     alloc::<Deallocate<100, Defragment<GarbageCollect>>>(out_result, provider, size, alignment)
 }
 
 #[no_mangle]
 pub extern "C" fn z_shm_provider_alloc_gc_defrag_blocking(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     alloc::<BlockOn<Defragment<GarbageCollect>>>(out_result, provider, size, alignment)
 }
 
 #[no_mangle]
 pub extern "C" fn z_shm_provider_alloc_gc_defrag_async(
-    out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &'static z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
     result_context: zc_threadsafe_context_t,
     result_callback: unsafe extern "C" fn(
         *mut c_void,
-        z_error_t,
-        *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+        *mut MaybeUninit<z_buf_layout_alloc_result_t>,
     ),
 ) -> z_error_t {
     alloc_async::<BlockOn<Defragment<GarbageCollect>>>(

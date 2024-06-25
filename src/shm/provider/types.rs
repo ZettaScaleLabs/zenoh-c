@@ -15,17 +15,20 @@
 use std::mem::MaybeUninit;
 
 use zenoh::internal::zerror;
-use zenoh::shm::{AllocAlignment, BufAllocResult, ChunkAllocResult, MemoryLayout, ZAllocError};
+use zenoh::shm::{
+    AllocAlignment, BufAllocResult, BufLayoutAllocResult, ChunkAllocResult, MemoryLayout,
+    ZAllocError, ZLayoutError,
+};
 
+use crate::shm::buffer::zshmmut::z_shm_mut_null;
 use crate::{
     errors::{z_error_t, Z_EINVAL, Z_OK},
     transmute::{
         unwrap_ref_unchecked, Inplace, TransmuteCopy, TransmuteFromHandle, TransmuteIntoHandle,
         TransmuteRef, TransmuteUninitPtr,
     },
-    z_loaned_buf_alloc_result_t, z_loaned_chunk_alloc_result_t, z_loaned_memory_layout_t,
-    z_owned_buf_alloc_result_t, z_owned_chunk_alloc_result_t, z_owned_memory_layout_t,
-    z_owned_shm_mut_t,
+    z_loaned_chunk_alloc_result_t, z_loaned_memory_layout_t, z_owned_chunk_alloc_result_t,
+    z_owned_memory_layout_t, z_owned_shm_mut_t,
 };
 
 use super::chunk::z_allocated_chunk_t;
@@ -65,7 +68,42 @@ impl From<z_alloc_error_t> for ZAllocError {
     }
 }
 
-// An AllocAlignment.
+/// Layouting errors
+///
+/// INCORRECT_LAYOUT_ARGS: layout arguments are incorrect
+/// PROVIDER_INCOMPATIBLE_LAYOUT: layout incompatible with provider
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub enum z_layout_error_t {
+    INCORRECT_LAYOUT_ARGS,
+    PROVIDER_INCOMPATIBLE_LAYOUT,
+}
+
+impl From<ZLayoutError> for z_layout_error_t {
+    #[inline]
+    fn from(value: ZLayoutError) -> Self {
+        match value {
+            ZLayoutError::IncorrectLayoutArgs => z_layout_error_t::INCORRECT_LAYOUT_ARGS,
+            ZLayoutError::ProviderIncompatibleLayout => {
+                z_layout_error_t::PROVIDER_INCOMPATIBLE_LAYOUT
+            }
+        }
+    }
+}
+
+impl From<z_layout_error_t> for ZLayoutError {
+    #[inline]
+    fn from(value: z_layout_error_t) -> Self {
+        match value {
+            z_layout_error_t::INCORRECT_LAYOUT_ARGS => ZLayoutError::IncorrectLayoutArgs,
+            z_layout_error_t::PROVIDER_INCOMPATIBLE_LAYOUT => {
+                ZLayoutError::ProviderIncompatibleLayout
+            }
+        }
+    }
+}
+
+/// An AllocAlignment.
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct z_alloc_alignment_t {
@@ -124,7 +162,7 @@ pub extern "C" fn z_memory_layout_drop(this: &mut z_owned_memory_layout_t) {
     let _ = this.transmute_mut().take();
 }
 
-/// Deletes Memory Layout
+/// Extract data from Memory Layout
 #[no_mangle]
 pub extern "C" fn z_memory_layout_get_data(
     out_size: &mut MaybeUninit<usize>,
@@ -189,54 +227,91 @@ pub extern "C" fn z_chunk_alloc_result_drop(this: &mut z_owned_chunk_alloc_resul
     let _ = this.transmute_mut().take();
 }
 
-decl_transmute_owned!(Option<BufAllocResult>, z_owned_buf_alloc_result_t);
+#[repr(C)]
+pub struct z_buf_alloc_result_t {
+    buf: z_owned_shm_mut_t,
+    error: z_alloc_error_t,
+}
 
-decl_transmute_handle!(BufAllocResult, z_loaned_buf_alloc_result_t);
+impl From<BufAllocResult> for z_buf_alloc_result_t {
+    fn from(value: BufAllocResult) -> Self {
+        let mut buf: MaybeUninit<z_owned_shm_mut_t> = MaybeUninit::uninit();
+        match value {
+            Ok(val) => {
+                Inplace::init(
+                    (&mut buf as *mut MaybeUninit<z_owned_shm_mut_t>).transmute_uninit_ptr(),
+                    Some(val),
+                );
 
-#[no_mangle]
-pub extern "C" fn z_buf_alloc_result_unwrap(
-    alloc_result: &mut z_owned_buf_alloc_result_t,
-    out_buf: *mut MaybeUninit<z_owned_shm_mut_t>,
-    out_error: &mut MaybeUninit<z_alloc_error_t>,
-) -> z_error_t {
-    match alloc_result.transmute_mut().extract() {
-        Some(Ok(val)) => {
-            Inplace::init(out_buf.transmute_uninit_ptr(), Some(val));
-            Z_OK
+                Self {
+                    // SAFETY: this is safe because buf is initialized above
+                    buf: unsafe { buf.assume_init() },
+                    error: z_alloc_error_t::OTHER,
+                }
+            }
+            Err(error) => {
+                z_shm_mut_null(&mut buf);
+
+                Self {
+                    // SAFETY: this is safe because buf is gravestone-initialized above
+                    buf: unsafe { buf.assume_init() },
+                    error: error.into(),
+                }
+            }
         }
-        Some(Err(err)) => {
-            Inplace::init(out_buf.transmute_uninit_ptr(), None);
-            out_error.write(err.into());
-            Z_OK
-        }
-        None => Z_EINVAL,
     }
 }
 
-/// Constructs Buf Alloc Result in its gravestone value.
-#[no_mangle]
-pub extern "C" fn z_buf_alloc_result_null(this: *mut MaybeUninit<z_owned_buf_alloc_result_t>) {
-    Inplace::empty(this.transmute_uninit_ptr());
+#[repr(C)]
+pub struct z_buf_layout_alloc_result_t {
+    buf: z_owned_shm_mut_t,
+    error_is_alloc: bool,
+    alloc_error: z_alloc_error_t,
+    layout_error: z_layout_error_t,
 }
 
-/// Returns ``true`` if `this` is valid.
-#[no_mangle]
-pub extern "C" fn z_buf_alloc_result_check(this: &z_owned_buf_alloc_result_t) -> bool {
-    this.transmute_ref().is_some()
-}
+impl From<BufLayoutAllocResult> for z_buf_layout_alloc_result_t {
+    fn from(value: BufLayoutAllocResult) -> Self {
+        let mut buf: MaybeUninit<z_owned_shm_mut_t> = MaybeUninit::uninit();
+        match value {
+            Ok(val) => {
+                Inplace::init(
+                    (&mut buf as *mut MaybeUninit<z_owned_shm_mut_t>).transmute_uninit_ptr(),
+                    Some(val),
+                );
 
-/// Borrows Buf Alloc Result
-#[no_mangle]
-pub extern "C" fn z_buf_alloc_result_loan(
-    this: &z_owned_buf_alloc_result_t,
-) -> &z_loaned_buf_alloc_result_t {
-    let this = this.transmute_ref();
-    let this = unwrap_ref_unchecked(this);
-    this.transmute_handle()
-}
+                Self {
+                    // SAFETY: this is safe because buf is initialized above
+                    buf: unsafe { buf.assume_init() },
+                    error_is_alloc: false,
+                    alloc_error: z_alloc_error_t::OTHER,
+                    layout_error: z_layout_error_t::PROVIDER_INCOMPATIBLE_LAYOUT,
+                }
+            }
+            Err(error) => {
+                z_shm_mut_null(&mut buf);
 
-/// Deletes Buf Alloc Result
-#[no_mangle]
-pub extern "C" fn z_buf_alloc_result_drop(this: &mut z_owned_buf_alloc_result_t) {
-    let _ = this.transmute_mut().take();
+                match error {
+                    zenoh::shm::ZLayoutAllocError::Alloc(alloc) => {
+                        Self {
+                            // SAFETY: this is safe because buf is gravestone-initialized above
+                            buf: unsafe { buf.assume_init() },
+                            error_is_alloc: true,
+                            alloc_error: alloc.into(),
+                            layout_error: z_layout_error_t::PROVIDER_INCOMPATIBLE_LAYOUT,
+                        }
+                    }
+                    zenoh::shm::ZLayoutAllocError::Layout(layout) => {
+                        Self {
+                            // SAFETY: this is safe because buf is gravestone-initialized above
+                            buf: unsafe { buf.assume_init() },
+                            error_is_alloc: false,
+                            alloc_error: z_alloc_error_t::OTHER,
+                            layout_error: layout.into(),
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -25,10 +25,10 @@ use crate::{
     context::{zc_threadsafe_context_t, DroppableContext, ThreadsafeContext},
     errors::{z_error_t, Z_EINVAL, Z_OK},
     transmute::{Inplace, TransmuteCopy, TransmuteFromHandle, TransmuteUninitPtr},
-    z_owned_buf_alloc_result_t,
 };
 use crate::{z_loaned_alloc_layout_t, z_loaned_shm_provider_t, z_owned_alloc_layout_t};
 
+use super::types::z_buf_alloc_result_t;
 use super::{
     alloc_layout::CSHMLayout, shm_provider_backend::DynamicShmProviderBackend,
     types::z_alloc_alignment_t,
@@ -87,7 +87,7 @@ pub(crate) fn alloc_layout_new(
 }
 
 pub(crate) fn alloc<Policy: AllocPolicy>(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &z_loaned_alloc_layout_t,
 ) {
     let result = match layout.transmute_ref() {
@@ -101,17 +101,14 @@ pub(crate) fn alloc<Policy: AllocPolicy>(
             layout.alloc().with_policy::<Policy>().wait()
         }
     };
-    Inplace::init(out_result.transmute_uninit_ptr(), Some(result));
+    out_result.write(result.into());
 }
 
 pub(crate) fn alloc_async<Policy: AsyncAllocPolicy>(
-    out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &'static z_loaned_alloc_layout_t,
     result_context: zc_threadsafe_context_t,
-    result_callback: unsafe extern "C" fn(
-        *mut c_void,
-        &mut MaybeUninit<z_owned_buf_alloc_result_t>,
-    ),
+    result_callback: unsafe extern "C" fn(*mut c_void, &mut MaybeUninit<z_buf_alloc_result_t>),
 ) -> z_error_t {
     match layout.transmute_ref() {
         super::alloc_layout::CSHMLayout::Posix(layout) => {
@@ -140,22 +137,16 @@ pub fn alloc_async_impl<
     IDSource: ProtocolIDSource,
     Backend: ShmProviderBackend + Send + Sync,
 >(
-    out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &'static AllocLayout<'static, IDSource, Backend>,
     result_context: zc_threadsafe_context_t,
-    result_callback: unsafe extern "C" fn(
-        *mut c_void,
-        &mut MaybeUninit<z_owned_buf_alloc_result_t>,
-    ),
+    result_callback: unsafe extern "C" fn(*mut c_void, &mut MaybeUninit<z_buf_alloc_result_t>),
 ) {
     let result_context: ThreadsafeContext = result_context.into();
     //todo: this should be ported to tokio with executor argument support
     async_std::task::spawn(async move {
         let result = layout.alloc().with_policy::<Policy>().await;
-        Inplace::init(
-            (out_result as *mut MaybeUninit<z_owned_buf_alloc_result_t>).transmute_uninit_ptr(),
-            Some(result),
-        );
+        out_result.write(result.into());
         unsafe { (result_callback)(result_context.get(), out_result) };
     });
 }

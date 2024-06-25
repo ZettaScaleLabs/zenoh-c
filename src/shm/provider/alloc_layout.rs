@@ -22,7 +22,6 @@ use crate::{
         unwrap_ref_unchecked, Inplace, TransmuteIntoHandle, TransmuteRef, TransmuteUninitPtr,
     },
     z_loaned_alloc_layout_t, z_loaned_shm_provider_t, z_owned_alloc_layout_t,
-    z_owned_buf_alloc_result_t,
 };
 use libc::c_void;
 use zenoh::shm::{
@@ -34,7 +33,7 @@ use crate::context::Context;
 use super::{
     alloc_layout_impl::{alloc, alloc_async, alloc_layout_new},
     shm_provider_backend::DynamicShmProviderBackend,
-    types::z_alloc_alignment_t,
+    types::{z_alloc_alignment_t, z_buf_alloc_result_t},
 };
 
 pub type DynamicAllocLayout =
@@ -91,7 +90,7 @@ pub extern "C" fn z_alloc_layout_drop(this: &mut z_owned_alloc_layout_t) {
 
 #[no_mangle]
 pub extern "C" fn z_alloc_layout_alloc(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &z_loaned_alloc_layout_t,
 ) {
     alloc::<JustAlloc>(out_result, layout);
@@ -99,7 +98,7 @@ pub extern "C" fn z_alloc_layout_alloc(
 
 #[no_mangle]
 pub extern "C" fn z_alloc_layout_alloc_gc(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &z_loaned_alloc_layout_t,
 ) {
     alloc::<GarbageCollect>(out_result, layout);
@@ -107,7 +106,7 @@ pub extern "C" fn z_alloc_layout_alloc_gc(
 
 #[no_mangle]
 pub extern "C" fn z_alloc_layout_alloc_gc_defrag(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &z_loaned_alloc_layout_t,
 ) {
     alloc::<Defragment<GarbageCollect>>(out_result, layout);
@@ -115,7 +114,7 @@ pub extern "C" fn z_alloc_layout_alloc_gc_defrag(
 
 #[no_mangle]
 pub extern "C" fn z_alloc_layout_alloc_gc_defrag_dealloc(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &z_loaned_alloc_layout_t,
 ) {
     alloc::<Deallocate<100, Defragment<GarbageCollect>>>(out_result, layout);
@@ -123,7 +122,7 @@ pub extern "C" fn z_alloc_layout_alloc_gc_defrag_dealloc(
 
 #[no_mangle]
 pub extern "C" fn z_alloc_layout_alloc_gc_defrag_blocking(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &z_loaned_alloc_layout_t,
 ) {
     alloc::<BlockOn<Defragment<GarbageCollect>>>(out_result, layout);
@@ -131,13 +130,10 @@ pub extern "C" fn z_alloc_layout_alloc_gc_defrag_blocking(
 
 #[no_mangle]
 pub extern "C" fn z_alloc_layout_threadsafe_alloc_gc_defrag_async(
-    out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_alloc_result_t>,
     layout: &'static z_loaned_alloc_layout_t,
     result_context: zc_threadsafe_context_t,
-    result_callback: unsafe extern "C" fn(
-        *mut c_void,
-        &mut MaybeUninit<z_owned_buf_alloc_result_t>,
-    ),
+    result_callback: unsafe extern "C" fn(*mut c_void, &mut MaybeUninit<z_buf_alloc_result_t>),
 ) -> z_error_t {
     alloc_async::<BlockOn<Defragment<GarbageCollect>>>(
         out_result,

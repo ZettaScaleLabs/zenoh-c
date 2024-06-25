@@ -12,14 +12,17 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use std::{borrow::BorrowMut, mem::MaybeUninit};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    mem::MaybeUninit,
+};
 
 use zenoh::shm::{zshmmut, ZShmMut};
 
 use crate::{
     transmute::{
-        unwrap_ref_unchecked_mut, Inplace, TransmuteFromHandle, TransmuteIntoHandle, TransmuteRef,
-        TransmuteUninitPtr,
+        unwrap_ref_unchecked, unwrap_ref_unchecked_mut, Inplace, TransmuteFromHandle,
+        TransmuteIntoHandle, TransmuteRef, TransmuteUninitPtr,
     },
     z_loaned_shm_mut_t, z_owned_shm_mut_t, z_owned_shm_t,
 };
@@ -55,6 +58,15 @@ pub extern "C" fn z_shm_mut_check(this: &z_owned_shm_mut_t) -> bool {
 
 /// Borrows ZShmMut slice
 #[no_mangle]
+pub extern "C" fn z_shm_mut_loan(this: &z_owned_shm_mut_t) -> &z_loaned_shm_mut_t {
+    let this = this.transmute_ref();
+    let this = unwrap_ref_unchecked(this);
+    let shmmut: &zshmmut = this.borrow();
+    shmmut.transmute_handle()
+}
+
+/// Mutably borrows ZShmMut slice
+#[no_mangle]
 pub extern "C" fn z_shm_mut_loan_mut(this: &mut z_owned_shm_mut_t) -> &mut z_loaned_shm_mut_t {
     let this = this.transmute_mut();
     let this = unwrap_ref_unchecked_mut(this);
@@ -74,7 +86,14 @@ pub extern "C" fn z_shm_mut_len(this: &z_loaned_shm_mut_t) -> usize {
     this.transmute_ref().len()
 }
 
-/// @return the mutable pointer of the ZShmMut slice
+/// @return the immutable pointer to the underluing data
+#[no_mangle]
+pub extern "C" fn z_shm_mut_data(this: &z_loaned_shm_mut_t) -> *const libc::c_uchar {
+    let s = this.transmute_ref();
+    s.as_ref().as_ptr()
+}
+
+/// @return the mutable pointer to the underluing data
 #[no_mangle]
 pub extern "C" fn z_shm_mut_data_mut(this: &mut z_loaned_shm_mut_t) -> *mut libc::c_uchar {
     let s = this.transmute_mut();

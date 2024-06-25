@@ -16,26 +16,25 @@ use libc::c_void;
 use std::mem::MaybeUninit;
 use zenoh::prelude::*;
 use zenoh::shm::{
-    AllocPolicy, AsyncAllocPolicy, BufLayoutAllocResult, DynamicProtocolID,
-    PosixShmProviderBackend, ProtocolIDSource, ShmProvider, ShmProviderBackend, StaticProtocolID,
-    ZLayoutAllocError, POSIX_PROTOCOL_ID,
+    AllocPolicy, AsyncAllocPolicy, DynamicProtocolID, PosixShmProviderBackend, ProtocolIDSource,
+    ShmProvider, ShmProviderBackend, StaticProtocolID, POSIX_PROTOCOL_ID,
 };
 
 use crate::context::{Context, DroppableContext, ThreadsafeContext};
 use crate::errors::{z_error_t, Z_EINVAL, Z_OK};
 use crate::transmute::{Inplace, TransmuteCopy, TransmuteFromHandle, TransmuteUninitPtr};
-use crate::{z_loaned_shm_provider_t, z_owned_buf_alloc_result_t, z_owned_shm_mut_t};
+use crate::{z_loaned_shm_provider_t, z_owned_shm_mut_t};
 
 use super::chunk::z_allocated_chunk_t;
 use super::shm_provider_backend::DynamicShmProviderBackend;
-use super::types::z_alloc_alignment_t;
+use super::types::{z_alloc_alignment_t, z_buf_layout_alloc_result_t};
 
 pub(crate) fn alloc<Policy: AllocPolicy>(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     match provider.transmute_ref() {
         super::shm_provider::CSHMProvider::Posix(provider) => {
             alloc_impl::<Policy, StaticProtocolID<POSIX_PROTOCOL_ID>, PosixShmProviderBackend>(
@@ -56,15 +55,14 @@ pub(crate) fn alloc<Policy: AllocPolicy>(
 }
 
 pub(crate) fn alloc_async<Policy: AsyncAllocPolicy>(
-    out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &'static z_loaned_shm_provider_t,
     size: usize,
     alignment: z_alloc_alignment_t,
     result_context: ThreadsafeContext,
     result_callback: unsafe extern "C" fn(
         *mut c_void,
-        z_error_t,
-        *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+        *mut MaybeUninit<z_buf_layout_alloc_result_t>,
     ),
 ) -> z_error_t {
     match provider.transmute_ref() {
@@ -163,18 +161,18 @@ pub(crate) fn map(
 }
 
 fn alloc_impl<Policy: AllocPolicy, TProtocolID: ProtocolIDSource, TBackend: ShmProviderBackend>(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &ShmProvider<TProtocolID, TBackend>,
     size: usize,
     alignment: z_alloc_alignment_t,
-) -> z_error_t {
+) {
     let result = provider
         .alloc(size)
         .with_alignment(alignment.transmute_copy())
         .with_policy::<Policy>()
         .wait();
 
-    parse_result(out_result, result)
+    out_result.write(result.into());
 }
 
 pub(crate) fn alloc_async_impl<
@@ -182,15 +180,14 @@ pub(crate) fn alloc_async_impl<
     TProtocolID: ProtocolIDSource,
     TBackend: ShmProviderBackend + Send + Sync,
 >(
-    out_result: &'static mut MaybeUninit<z_owned_buf_alloc_result_t>,
+    out_result: &'static mut MaybeUninit<z_buf_layout_alloc_result_t>,
     provider: &'static ShmProvider<TProtocolID, TBackend>,
     size: usize,
     alignment: z_alloc_alignment_t,
     result_context: ThreadsafeContext,
     result_callback: unsafe extern "C" fn(
         *mut c_void,
-        z_error_t,
-        *mut MaybeUninit<z_owned_buf_alloc_result_t>,
+        *mut MaybeUninit<z_buf_layout_alloc_result_t>,
     ),
 ) {
     //todo: this should be ported to tokio with executor argument support
@@ -200,26 +197,9 @@ pub(crate) fn alloc_async_impl<
             .with_alignment(alignment.transmute_copy())
             .with_policy::<Policy>()
             .await;
-        let error = parse_result(out_result, result);
+        out_result.write(result.into());
         unsafe {
-            (result_callback)(result_context.get(), error, out_result);
+            (result_callback)(result_context.get(), out_result);
         }
     });
-}
-
-fn parse_result(
-    out_result: *mut MaybeUninit<z_owned_buf_alloc_result_t>,
-    result: BufLayoutAllocResult,
-) -> z_error_t {
-    match result {
-        Ok(buf) => {
-            Inplace::init(out_result.transmute_uninit_ptr(), Some(Ok(buf)));
-            Z_OK
-        }
-        Err(ZLayoutAllocError::Alloc(e)) => {
-            Inplace::init(out_result.transmute_uninit_ptr(), Some(Err(e)));
-            Z_OK
-        }
-        Err(ZLayoutAllocError::Layout(_)) => Z_EINVAL,
-    }
 }

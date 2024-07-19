@@ -13,7 +13,7 @@
 #
 [package]
 name = "zenoh-c"
-version = "0.11.0-dev"
+version = "0.11.1-dev"
 repository = "https://github.com/eclipse-zenoh/zenoh-c"
 homepage = "http://zenoh.io"
 authors = [
@@ -49,10 +49,10 @@ libc = "0.2.139"
 rand = "0.8.5"
 spin = "0.9.5"
 # shared-memory enabled for zenoh even if zenoh-c "shared-memory" feature is disabled. This is to make "std::mem::transmute" work for `ZSLice`
-zenoh = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main", features = ["shared-memory", "unstable"], default-features = false }
-zenoh-protocol = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main", features = ["shared-memory"] }
-zenoh-util = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main" }
-zenoh-ext = { version = "0.11.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main", features = ["unstable"] }
+zenoh = { version = "0.11.1-dev", features = ["shared-memory", "unstable"], default-features = false }
+zenoh-protocol = { version = "0.11.1-dev", features = ["shared-memory"] }
+zenoh-util = { version = "0.11.1-dev"}
+zenoh-ext = { version = "0.11.1-dev", features = ["unstable"] }
 tracing = "0.1"
 
 [build-dependencies]
@@ -80,7 +80,7 @@ maintainer = "zenoh-dev@eclipse.org"
 copyright = "2017, 2022 ZettaScale Technology"
 section = "net"
 license-file = ["LICENSE", "0"]
-depends = "libzenohc (=0.11.0-dev-1)"
+depends = "libzenohc (=0.11.1~dev-1)"
 assets = [["include/*", "usr/include/", "755"]]
 
 [profile.dev]

@@ -163,8 +163,8 @@ checksum = "30ca9a001c1e8ba5149f91a74362376cc6bc5b919d92d988668657bd570bdcec"
 dependencies = [
  "async-task",
  "concurrent-queue",
- "fastrand 2.1.1",
- "futures-lite 2.3.0",
+ "fastrand",
+ "futures-lite",
  "slab",
 ]
 
@@ -176,31 +176,11 @@ checksum = "05b1b633a2115cd122d73b955eadd9916c18c8f510ec9cd1686404c60ad1c29c"
 dependencies = [
  "async-channel 2.3.1",
  "async-executor",
- "async-io 2.3.4",
- "async-lock 3.4.0",
+ "async-io",
+ "async-lock",
  "blocking",
- "futures-lite 2.3.0",
+ "futures-lite",
  "once_cell",
-]
-
-[[package]]
-name = "async-io"
-version = "1.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fc5b45d93ef0529756f812ca52e44c221b35341892d3dcc34132ac02f3dd2af"
-dependencies = [
- "async-lock 2.8.0",
- "autocfg",
- "cfg-if",
- "concurrent-queue",
- "futures-lite 1.13.0",
- "log",
- "parking",
- "polling 2.8.0",
- "rustix 0.37.27",
- "slab",
- "socket2 0.4.10",
- "waker-fn",
 ]
 
 [[package]]
@@ -209,26 +189,17 @@ version = "2.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "444b0228950ee6501b3568d3c93bf1176a1fdbc3b758dcd9475046d30f4dc7e8"
 dependencies = [
- "async-lock 3.4.0",
+ "async-lock",
  "cfg-if",
  "concurrent-queue",
  "futures-io",
- "futures-lite 2.3.0",
+ "futures-lite",
  "parking",
- "polling 3.7.3",
- "rustix 0.38.37",
+ "polling",
+ "rustix",
  "slab",
  "tracing",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "async-lock"
-version = "2.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "287272293e9d8c41773cec55e365490fe034813a2f172f502d6ddcf75b2f582b"
-dependencies = [
- "event-listener 2.5.3",
 ]
 
 [[package]]
@@ -244,19 +215,19 @@ dependencies = [
 
 [[package]]
 name = "async-std"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62565bb4402e926b29953c785397c6dc0391b7b446e45008b0049eb43cec6f5d"
+checksum = "c634475f29802fde2b8f0b505b1bd00dfe4df7d4a000f0b36f7671197d5c3615"
 dependencies = [
  "async-channel 1.9.0",
  "async-global-executor",
- "async-io 1.13.0",
- "async-lock 2.8.0",
+ "async-io",
+ "async-lock",
  "crossbeam-utils",
  "futures-channel",
  "futures-core",
  "futures-io",
- "futures-lite 1.13.0",
+ "futures-lite",
  "gloo-timers",
  "kv-log-macro",
  "log",
@@ -383,7 +354,7 @@ dependencies = [
  "async-channel 2.3.1",
  "async-task",
  "futures-io",
- "futures-lite 2.3.0",
+ "futures-lite",
  "piper",
 ]
 
@@ -786,15 +757,6 @@ dependencies = [
 
 [[package]]
 name = "fastrand"
-version = "1.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e51093e27b0797c359783294ca4f0a911c270184cb10f85783b118614a1501be"
-dependencies = [
- "instant",
-]
-
-[[package]]
-name = "fastrand"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8c02a5121d4ea3eb16a80748c74f5549a5665e4c21333c6098f283870fbdea6"
@@ -908,26 +870,11 @@ checksum = "a44623e20b9681a318efdd71c299b6b222ed6f231972bfe2f224ebad6311f0c1"
 
 [[package]]
 name = "futures-lite"
-version = "1.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49a9d51ce47660b1e808d3c990b4709f2f415d928835a17dfd16991515c46bce"
-dependencies = [
- "fastrand 1.9.0",
- "futures-core",
- "futures-io",
- "memchr",
- "parking",
- "pin-project-lite",
- "waker-fn",
-]
-
-[[package]]
-name = "futures-lite"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52527eb5074e35e9339c6b4e8d12600c7128b68fb25dcb9fa9dec18f7c25f3a5"
 dependencies = [
- "fastrand 2.1.1",
+ "fastrand",
  "futures-core",
  "futures-io",
  "parking",
@@ -1026,9 +973,9 @@ dependencies = [
 
 [[package]]
 name = "gloo-timers"
-version = "0.2.6"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b995a66bb87bebce9a0f4a95aed01daca4872c050bfcb21653361c03bc35e5c"
+checksum = "bbb143cf96099802033e0d4f4963b19fd2e0b728bcf076cd9cf7f6634f092994"
 dependencies = [
  "futures-channel",
  "futures-core",
@@ -1208,17 +1155,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "io-lifetimes"
-version = "1.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eae7b9aee968036d54dce06cebaefd919e4472e753296daccd6d344e3e2df0c2"
-dependencies = [
- "hermit-abi 0.3.9",
- "libc",
- "windows-sys 0.48.0",
-]
-
-[[package]]
 name = "ipnetwork"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1355,12 +1291,6 @@ dependencies = [
  "bitflags 2.6.0",
  "libc",
 ]
-
-[[package]]
-name = "linux-raw-sys"
-version = "0.3.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef53942eb7bf7ff43a617b3e2c1c4a5ecf5944a7c1bc12d7ee39bbb15e5c1519"
 
 [[package]]
 name = "linux-raw-sys"
@@ -1888,7 +1818,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96c8c490f422ef9a4efd2cb5b42b76c8613d7e7dfc1caf667b8a3350a5acc066"
 dependencies = [
  "atomic-waker",
- "fastrand 2.1.1",
+ "fastrand",
  "futures-io",
 ]
 
@@ -1916,8 +1846,7 @@ dependencies = [
 [[package]]
 name = "pnet_base"
 version = "0.35.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffc190d4067df16af3aba49b3b74c469e611cad6314676eaf1157f31aa0fb2f7"
+source = "git+https://github.com/ZettaScaleLabs/libpnet.git?branch=qnx-port#67f50eebd2cd0033ea7a8d6a55736b9a4b290ed0"
 dependencies = [
  "no-std-net",
 ]
@@ -1925,8 +1854,7 @@ dependencies = [
 [[package]]
 name = "pnet_datalink"
 version = "0.35.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e79e70ec0be163102a332e1d2d5586d362ad76b01cec86f830241f2b6452a7b7"
+source = "git+https://github.com/ZettaScaleLabs/libpnet.git?branch=qnx-port#67f50eebd2cd0033ea7a8d6a55736b9a4b290ed0"
 dependencies = [
  "ipnetwork",
  "libc",
@@ -1938,8 +1866,7 @@ dependencies = [
 [[package]]
 name = "pnet_sys"
 version = "0.35.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d4643d3d4db6b08741050c2f3afa9a892c4244c085a72fcda93c9c2c9a00f4b"
+source = "git+https://github.com/ZettaScaleLabs/libpnet.git?branch=qnx-port#67f50eebd2cd0033ea7a8d6a55736b9a4b290ed0"
 dependencies = [
  "libc",
  "winapi",
@@ -1947,31 +1874,14 @@ dependencies = [
 
 [[package]]
 name = "polling"
-version = "2.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b2d323e8ca7996b3e23126511a523f7e62924d93ecd5ae73b333815b0eb3dce"
-dependencies = [
- "autocfg",
- "bitflags 1.3.2",
- "cfg-if",
- "concurrent-queue",
- "libc",
- "log",
- "pin-project-lite",
- "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "polling"
 version = "3.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc2790cd301dec6cd3b7a025e4815cf825724a51c98dccfe6a3e55f05ffb6511"
+source = "git+https://github.com/ZettaScaleLabs/polling.git?branch=qnx-port#08649dc952b43d9f3b3ff0b2061e6971f6106b4e"
 dependencies = [
  "cfg-if",
  "concurrent-queue",
  "hermit-abi 0.4.0",
  "pin-project-lite",
- "rustix 0.38.37",
+ "rustix",
  "tracing",
  "windows-sys 0.59.0",
 ]
@@ -2021,7 +1931,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls",
- "socket2 0.5.7",
+ "socket2",
  "thiserror",
  "tokio",
  "tracing",
@@ -2053,7 +1963,7 @@ checksum = "4fe68c2e9e1a1234e218683dbdf9f9dfcb094113c5ac2b938dfcb9bab4c4140b"
 dependencies = [
  "libc",
  "once_cell",
- "socket2 0.5.7",
+ "socket2",
  "tracing",
  "windows-sys 0.59.0",
 ]
@@ -2250,20 +2160,6 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.37.27"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fea8ca367a3a01fe35e6943c400addf443c0f57670e6ec51196f71a4b8762dd2"
-dependencies = [
- "bitflags 1.3.2",
- "errno 0.3.9",
- "io-lifetimes",
- "libc",
- "linux-raw-sys 0.3.8",
- "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "rustix"
 version = "0.38.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8acb788b847c24f28525660c4d7758620a7210875711f79e7f663cc152726811"
@@ -2271,7 +2167,7 @@ dependencies = [
  "bitflags 2.6.0",
  "errno 0.3.9",
  "libc",
- "linux-raw-sys 0.4.14",
+ "linux-raw-sys",
  "windows-sys 0.52.0",
 ]
 
@@ -2662,19 +2558,8 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "socket2"
-version = "0.4.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f7916fc008ca5542385b89a3d3ce689953c143e9304a9bf8beec1de48994c0d"
-dependencies = [
- "libc",
- "winapi",
-]
-
-[[package]]
-name = "socket2"
 version = "0.5.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
+source = "git+https://github.com/ZettaScaleLabs/socket2.git?branch=qnx-port#d8fbbec76a05aedf174c9e7aa3a28aba259f488d"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
@@ -2819,9 +2704,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04cbcdd0c794ebb0d4cf35e88edd2f7d2c4c3e9a5a6dab322839b321c6a87a64"
 dependencies = [
  "cfg-if",
- "fastrand 2.1.1",
+ "fastrand",
  "once_cell",
- "rustix 0.38.37",
+ "rustix",
  "windows-sys 0.59.0",
 ]
 
@@ -2950,7 +2835,7 @@ dependencies = [
  "libc",
  "mio 1.0.2",
  "pin-project-lite",
- "socket2 0.5.7",
+ "socket2",
  "tokio-macros",
  "windows-sys 0.52.0",
 ]
@@ -3345,12 +3230,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "waker-fn"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "317211a0dc0ceedd78fb2ca9a44aed3d7b9b26f81870d485c07122b4350673b7"
-
-[[package]]
 name = "walkdir"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3734,7 +3613,7 @@ dependencies = [
 [[package]]
 name = "zenoh"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "ahash",
  "async-trait",
@@ -3756,7 +3635,7 @@ dependencies = [
  "serde_cbor",
  "serde_json",
  "serde_yaml",
- "socket2 0.5.7",
+ "socket2",
  "tokio",
  "tokio-util",
  "tracing",
@@ -3785,7 +3664,7 @@ dependencies = [
 [[package]]
 name = "zenoh-buffers"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "zenoh-collections",
 ]
@@ -3823,7 +3702,7 @@ dependencies = [
 [[package]]
 name = "zenoh-codec"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "tracing",
  "uhlc",
@@ -3835,12 +3714,12 @@ dependencies = [
 [[package]]
 name = "zenoh-collections"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 
 [[package]]
 name = "zenoh-config"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "json5",
  "num_cpus",
@@ -3861,7 +3740,7 @@ dependencies = [
 [[package]]
 name = "zenoh-core"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "lazy_static",
  "tokio",
@@ -3872,7 +3751,7 @@ dependencies = [
 [[package]]
 name = "zenoh-crypto"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "aes",
  "hmac",
@@ -3885,7 +3764,7 @@ dependencies = [
 [[package]]
 name = "zenoh-ext"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "bincode",
  "flume",
@@ -3901,7 +3780,7 @@ dependencies = [
 [[package]]
 name = "zenoh-keyexpr"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "hashbrown 0.14.5",
  "keyed-set",
@@ -3915,7 +3794,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "zenoh-config",
  "zenoh-link-commons",
@@ -3935,7 +3814,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-commons"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "flume",
@@ -3958,7 +3837,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-quic"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3983,7 +3862,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-serial"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "tokio",
@@ -4001,10 +3880,10 @@ dependencies = [
 [[package]]
 name = "zenoh-link-tcp"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
- "socket2 0.5.7",
+ "socket2",
  "tokio",
  "tokio-util",
  "tracing",
@@ -4018,7 +3897,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-tls"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4027,7 +3906,7 @@ dependencies = [
  "rustls-pki-types",
  "rustls-webpki",
  "secrecy",
- "socket2 0.5.7",
+ "socket2",
  "tokio",
  "tokio-rustls",
  "tokio-util",
@@ -4045,10 +3924,10 @@ dependencies = [
 [[package]]
 name = "zenoh-link-udp"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
- "socket2 0.5.7",
+ "socket2",
  "tokio",
  "tokio-util",
  "tracing",
@@ -4064,7 +3943,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-unixpipe"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "advisory-lock",
  "async-trait",
@@ -4086,7 +3965,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-unixsock_stream"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "nix 0.29.0",
@@ -4104,7 +3983,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-vsock"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "libc",
@@ -4122,7 +4001,7 @@ dependencies = [
 [[package]]
 name = "zenoh-link-ws"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "futures-util",
@@ -4142,7 +4021,7 @@ dependencies = [
 [[package]]
 name = "zenoh-macros"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4153,7 +4032,7 @@ dependencies = [
 [[package]]
 name = "zenoh-plugin-trait"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "git-version",
  "libloading",
@@ -4169,7 +4048,7 @@ dependencies = [
 [[package]]
 name = "zenoh-protocol"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "const_format",
  "rand",
@@ -4183,7 +4062,7 @@ dependencies = [
 [[package]]
 name = "zenoh-result"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "anyhow",
 ]
@@ -4191,7 +4070,7 @@ dependencies = [
 [[package]]
 name = "zenoh-runtime"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "lazy_static",
  "ron",
@@ -4204,7 +4083,7 @@ dependencies = [
 [[package]]
 name = "zenoh-shm"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "crc",
@@ -4226,7 +4105,7 @@ dependencies = [
 [[package]]
 name = "zenoh-sync"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "event-listener 5.3.1",
  "futures",
@@ -4239,7 +4118,7 @@ dependencies = [
 [[package]]
 name = "zenoh-task"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "futures",
  "tokio",
@@ -4252,7 +4131,7 @@ dependencies = [
 [[package]]
 name = "zenoh-transport"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "crossbeam-utils",
@@ -4286,7 +4165,7 @@ dependencies = [
 [[package]]
 name = "zenoh-util"
 version = "1.0.0-dev"
-source = "git+https://github.com/eclipse-zenoh/zenoh.git?branch=main#965e9050ac2d1cae83ad0919c91f2ac9cd56f648"
+source = "git+https://github.com/ZettaScaleLabs/zenoh.git?branch=qnx-port-1.0.0#b7aba5bdc5f31f65ace61531ad8723ced413b401"
 dependencies = [
  "async-trait",
  "const_format",

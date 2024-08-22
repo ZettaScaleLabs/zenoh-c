@@ -62,7 +62,8 @@ default = [
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-async-std = "=1.12.0"
+async-std = "=1.13.0"
+async-trait = "0.1.66"
 chrono = "0.4.37"
 json5 = "0.4.1"
 lazy_static = "1.4.0"
@@ -72,10 +73,12 @@ rand = "0.8.5"
 spin = "0.9.5"
 unwrap-infallible = "0.1.5"
 const_format = "0.2.32"
-zenoh = { version = "1.0.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main", default-features = false, features = ["internal"] }
-zenoh-ext = { version = "1.0.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", features=["internal"], branch = "main" }
-zenoh-runtime = { version = "1.0.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main" }
-zenoh-util = { version = "1.0.0-dev", git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "main"  }
+zenoh = { version = "1.0.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", branch = "qnx-port-1.0.0", default-features = false, features = [
+    "internal",
+] }
+zenoh-ext = { version = "1.0.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", features=["internal"], branch = "qnx-port-1.0.0"}
+zenoh-runtime = { version = "1.0.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", branch = "qnx-port-1.0.0" }
+zenoh-util = { version = "1.0.0-dev", git = "https://github.com/ZettaScaleLabs/zenoh.git", branch = "qnx-port-1.0.0" }
 flume = "*"
 
 [build-dependencies]
@@ -119,3 +122,9 @@ lto = "fat"
 codegen-units = 1
 opt-level = 3
 panic = "abort"
+
+# Support for building for QNX
+[patch.crates-io]
+pnet_datalink = { git = "https://github.com/ZettaScaleLabs/libpnet.git", branch = "qnx-port" }
+polling = { git = "https://github.com/ZettaScaleLabs/polling.git", branch = "qnx-port" }
+socket2 = { git = "https://github.com/ZettaScaleLabs/socket2.git", branch = "qnx-port" }

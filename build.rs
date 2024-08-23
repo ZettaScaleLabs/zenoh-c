@@ -140,7 +140,7 @@ fn produce_opaque_types_data() -> PathBuf {
         .arg(manifest_path)
         // FIXME: Temporary fix for QNX support - ideally need to set this based on the arguments to top level cargo
         .arg("--no-default-features")
-        .arg("--features=zenoh/transport_tcp,zenoh/transport_udp")
+        .arg("--features=zenoh/auth_pubkey,zenoh/auth_usrpwd,zenoh/transport_multilink,zenoh/transport_compression,zenoh/transport_tcp,zenoh/transport_udp,zenoh/transport_ws")
         .stderr(stdio)
         .output()
         .unwrap();

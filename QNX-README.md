@@ -35,17 +35,33 @@ The following Zenoh features are currently supported:
    git checkout qnx-port-1.0.0
    ```
 
-3. Build Zenoh-C:
-
-   Good CMake practice is to perform build outside of source directory, leaving source tree untouched. The examples below demonstrates this mode of building.
+3. Create a directory to build Zenoh-C in (good CMake practice is to perform the build outside of source directory, leaving source tree untouched):
 
    ```bash
    mkdir -p build && cd build
-   CC=qcc CFLAGS=-Vgcc_ntox86_64_cxx CXX=qcc AR=ntox86_64-ar cmake ../zenoh-c -DZENOHC_CARGO_FLAGS="--no-default-features;--features=zenoh/auth_pubkey,zenoh/auth_usrpwd,zenoh/transport_multilink,zenoh/transport_compression,zenoh/transport_tcp,zenoh/transport_udp,zenoh/transport_ws" -DZENOHC_CUSTOM_TARGET="x86_64-pc-nto-qnx710" -DCMAKE_INSTALL_PREFIX=<install location>
-   cmake --build .
    ```
 
-4. Build the examples (optional):
+4. Configure the Zenoh-C build:
+
+   For the `x86_64-pc-nto-qnx710` target:
+
+   ```bash
+   CC=qcc CFLAGS=-Vgcc_ntox86_64_cxx CXX=qcc AR=ntox86_64-ar cmake ../zenoh-c -DZENOHC_CARGO_FLAGS="--no-default-features;--features=zenoh/auth_pubkey,zenoh/auth_usrpwd,zenoh/transport_multilink,zenoh/transport_compression,zenoh/transport_tcp,zenoh/transport_udp,zenoh/transport_ws" -DZENOHC_CUSTOM_TARGET="x86_64-pc-nto-qnx710" -DCMAKE_INSTALL_PREFIX=<install location>
+   ```
+
+   For the `aarch64-unknown-nto-qnx710` target:
+
+   ```bash
+   CC=qcc CFLAGS=-Vgcc_ntoaarch64le_cxx CXX=qcc AR=ntoaarch64-ar cmake ../zenoh-c -DZENOHC_CARGO_FLAGS="--no-default-features;--features=zenoh/auth_pubkey,zenoh/auth_usrpwd,zenoh/transport_multilink,zenoh/transport_compression,zenoh/transport_tcp,zenoh/transport_udp,zenoh/transport_ws" -DZENOHC_CUSTOM_TARGET="aarch64-unknown-nto-qnx710" -DCMAKE_INSTALL_PREFIX=<install location>
+   ```
+
+5. Build Zenoh-C:
+
+   ```bash
+   cmake --build . --config Release
+   ```
+
+6. Build the examples (optional):
 
    To build the examples run the following command:
 
@@ -53,7 +69,7 @@ The following Zenoh features are currently supported:
    cmake --build . --target examples
    ```
 
-5. Install:
+7. Install:
 
    To install zenoh-c library into system just build target `install`.
 
@@ -61,12 +77,7 @@ The following Zenoh features are currently supported:
    cmake --build . --target install
    ```  
 
-   By default only dynamic library is installed. Set `ZENOHC_INSTALL_STATIC_LIBRARY` variable to true to install static library also:
-
-   ```bash
-   CC=qcc CFLAGS=-Vgcc_ntox86_64_cxx CXX=qcc AR=ntox86_64-ar cmake ../zenoh-c -DZENOHC_CARGO_FLAGS="--no-default-features;--features=zenoh/auth_pubkey,zenoh/auth_usrpwd,zenoh/transport_multilink,zenoh/transport_compression,zenoh/transport_tcp,zenoh/transport_udp,zenoh/transport_ws" -DZENOHC_CUSTOM_TARGET="x86_64-pc-nto-qnx710" -DCMAKE_INSTALL_PREFIX=<install location> -DZENOHC_INSTALL_STATIC_LIBRARY=TRUE
-   cmake --build . --target install
-   ```
+   By default only the dynamic library is installed. Set `ZENOHC_INSTALL_STATIC_LIBRARY` cmake variable to `TRUE` during step 4 to also install the static library by adding `-DZENOHC_INSTALL_STATIC_LIBRARY=TRUE` to the end of the configure command.
 
    The result of installation is the header files in `include` directory, the library files in `lib` directory and cmake package configuration files for package `zenohc` in `lib/cmake` directory. The library later can be loaded with CMake command `find_package(zenohc)`.
    Add dependency in CMakeLists.txt on target

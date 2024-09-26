@@ -173,12 +173,19 @@ pub extern "C" fn zc_liveliness_declare_subscriber(
         .history(options.is_some_and(|o| o.history))
         .callback(move |sample| {
             let mut owned_sample = Some(sample);
+            let sample_ptr = &mut owned_sample as *mut Option<zenoh::sample::Sample>;
+            std::mem::forget(owned_sample);
+
             z_closure_sample_call(z_closure_sample_loan(&callback), unsafe {
-                owned_sample
+                sample_ptr
+                    .as_mut()
+                    .unwrap_unchecked()
                     .as_mut()
                     .unwrap_unchecked()
                     .as_loaned_c_type_mut()
-            })
+            });
+
+            std::mem::drop(unsafe { sample_ptr.read() });
         })
         .wait()
     {

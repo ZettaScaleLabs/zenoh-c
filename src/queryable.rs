@@ -235,12 +235,19 @@ pub extern "C" fn z_declare_queryable(
     let queryable = builder
         .callback(move |query| {
             let mut owned_query = Some(query);
+            let query_ptr = &mut owned_query as *mut Option<Query>;
+            std::mem::forget(owned_query);
+
             z_closure_query_call(z_closure_query_loan(&callback), unsafe {
-                owned_query
+                query_ptr
+                    .as_mut()
+                    .unwrap_unchecked()
                     .as_mut()
                     .unwrap_unchecked()
                     .as_loaned_c_type_mut()
-            })
+            });
+
+            std::mem::drop(unsafe { query_ptr.read() });
         })
         .wait();
     match queryable {

@@ -268,13 +268,20 @@ pub unsafe extern "C" fn z_get(
     match get
         .callback(move |response| {
             let mut owned_response = Some(response);
+            let response_ptr = &mut owned_response as *mut Option<Reply>;
+            std::mem::forget(owned_response);
+
             z_closure_reply_call(
                 z_closure_reply_loan(&callback),
-                owned_response
+                response_ptr
+                    .as_mut()
+                    .unwrap_unchecked()
                     .as_mut()
                     .unwrap_unchecked()
                     .as_loaned_c_type_mut(),
-            )
+            );
+
+            std::mem::drop(unsafe { response_ptr.read() });
         })
         .wait()
     {

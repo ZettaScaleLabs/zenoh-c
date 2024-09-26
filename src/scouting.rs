@@ -183,9 +183,19 @@ pub extern "C" fn z_scout(
         let scout = zenoh::scout(what, config)
             .callback(move |h| {
                 let mut owned_h = Some(h);
+                let h_ptr = &mut owned_h as *mut Option<Hello>;
+                std::mem::forget(owned_h);
+
                 z_closure_hello_call(z_closure_hello_loan(&callback), unsafe {
-                    owned_h.as_mut().unwrap_unchecked().as_loaned_c_type_mut()
-                })
+                    h_ptr
+                        .as_mut()
+                        .unwrap_unchecked()
+                        .as_mut()
+                        .unwrap_unchecked()
+                        .as_loaned_c_type_mut()
+                });
+
+                std::mem::drop(unsafe { h_ptr.read() });
             })
             .await
             .unwrap();

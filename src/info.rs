@@ -67,7 +67,15 @@ pub unsafe extern "C" fn z_info_peers_zid(
     let session = session.as_rust_type_ref();
     let callback = callback.take_rust_type();
     for mut id in session.info().peers_zid().wait() {
-        z_closure_zid_call(z_closure_zid_loan(&callback), id.as_ctype_mut());
+        let id_ptr = &mut id as *mut ZenohId;
+        //std::mem::forget(id);
+
+        z_closure_zid_call(
+            z_closure_zid_loan(&callback),
+            id_ptr.as_mut().unwrap_unchecked().as_ctype_mut(),
+        );
+
+        //std::mem::drop(unsafe { id_ptr.read() });
     }
     result::Z_OK
 }
@@ -88,7 +96,15 @@ pub unsafe extern "C" fn z_info_routers_zid(
     let session = session.as_rust_type_ref();
     let callback = callback.take_rust_type();
     for mut id in session.info().routers_zid().wait() {
-        z_closure_zid_call(z_closure_zid_loan(&callback), id.as_ctype_mut());
+        let id_ptr = &mut id as *mut ZenohId;
+        //std::mem::forget(id);
+
+        z_closure_zid_call(
+            z_closure_zid_loan(&callback),
+            id_ptr.as_mut().unwrap_unchecked().as_ctype_mut(),
+        );
+
+        //std::mem::drop(unsafe { id_ptr.read() });
     }
     result::Z_OK
 }

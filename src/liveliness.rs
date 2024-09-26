@@ -14,7 +14,7 @@
 
 use std::mem::MaybeUninit;
 
-use zenoh::{liveliness::LivelinessToken, Wait};
+use zenoh::{liveliness::LivelinessToken, query::Reply, Wait};
 
 use crate::{
     opaque_types::{zc_loaned_liveliness_token_t, zc_owned_liveliness_token_t},
@@ -237,12 +237,19 @@ pub extern "C" fn zc_liveliness_get(
     let liveliness = session.liveliness();
     let mut builder = liveliness.get(key_expr).callback(move |response| {
         let mut owned_response = Some(response);
+        let response_ptr = &mut owned_response as *mut Option<Reply>;
+        std::mem::forget(owned_response);
+
         z_closure_reply_call(z_closure_reply_loan(&callback), unsafe {
-            owned_response
+            response_ptr
+                .as_mut()
+                .unwrap_unchecked()
                 .as_mut()
                 .unwrap_unchecked()
                 .as_loaned_c_type_mut()
-        })
+        });
+
+        std::mem::drop(unsafe { response_ptr.read() });
     });
     if let Some(options) = options {
         builder = builder.timeout(core::time::Duration::from_millis(options.timeout_ms as u64));
